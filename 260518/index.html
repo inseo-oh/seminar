@@ -2,7 +2,7 @@
 <html lang="ko">
     <head>
         <meta charset="UTF-8" />
-        <title>숨은 단어 찾기 게임 - 교재 디자인 버전</title>
+        <title>숨은 단어 찾기 게임 - 좌표 완벽 수정 버전</title>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <style>
             * {
@@ -20,7 +20,7 @@
                 padding: 20px;
             }
 
-            /* [변경] 메인 전체 외곽 컨테이너 */
+            /* 메인 전체 외곽 컨테이너 */
             .main-wrapper {
                 width: 1000px;
                 background: #ffffff;
@@ -32,7 +32,7 @@
                 gap: 20px;
             }
 
-            /* [추가] 상단 타이틀 영역 스타일 */
+            /* 상단 타이틀 영역 스타일 */
             .game-header {
                 display: flex;
                 justify-content: space-between;
@@ -64,7 +64,7 @@
                 font-weight: 600;
             }
 
-            /* [변경] 가이드 지문 영역 */
+            /* 가이드 지문 영역 */
             .guide-intro {
                 font-size: 18px;
                 color: #334155;
@@ -87,15 +87,21 @@
                 justify-content: center;
                 align-items: center;
             }
+
+            /* 주황색 테두리 역할만 수행하는 배경 박스 */
             .grid-wrapper {
-                position: relative;
-                display: inline-block;
-                overflow: visible;
-                /* [변경] 단어판 외곽 베이지/오렌지 라운드 테두리 */
                 background-color: #f3cda2;
                 padding: 8px;
                 border-radius: 12px;
+                display: inline-block;
             }
+
+            /* [핵심 수정] 테이블과 SVG를 1:1 크기로 묶어주는 기준점 박스 */
+            .table-relative-box {
+                position: relative;
+                display: block;
+            }
+
             /* 단어 판 테이블 스타일 */
             .word-table {
                 border-collapse: collapse;
@@ -105,7 +111,6 @@
             .word-table td {
                 width: 52px;
                 height: 52px;
-                /* [변경] 교재 느낌의 연한 브라운 격자선 */
                 border: 2px solid #f3cda2;
                 text-align: center;
                 font-size: 20px;
@@ -120,13 +125,7 @@
                 color: #f43f5e;
             }
 
-            /* 테스트 모드 정답 힌트 스타일 */
-            .word-table td.is-test-hint {
-                background-color: #f0fdf4 !important;
-                border: 2px dashed #22c55e !important;
-            }
-
-            /* 타원 표시용 SVG 오버레이 */
+            /* [핵심 수정] 이제 테이블 박스 크기와 정확히 일치하게 오버레이됨 */
             .svg-overlay {
                 position: absolute;
                 top: 0;
@@ -146,7 +145,7 @@
                 gap: 25px;
             }
 
-            /* [변경] 우측 중앙: 교재 스타일의 파스텔 블루 문제 상자 */
+            /* 우측 중앙: 교재 스타일의 파스텔 블루 문제 상자 */
             .question-box {
                 background-color: #eaf4f7;
                 border-radius: 16px;
@@ -157,7 +156,7 @@
                 flex-direction: column;
                 justify-content: center;
             }
-            /* [변경] 문제 번호 배지 */
+            /* 문제 번호 배지 */
             .question-number {
                 position: absolute;
                 top: -15px;
@@ -184,7 +183,7 @@
                 display: flex;
                 justify-content: flex-end;
             }
-            /* [변경] 교재 스타일의 다시하기 하늘색 알약 버튼 */
+            /* 다시하기 하늘색 알약 버튼 */
             .reset-btn {
                 padding: 12px 32px;
                 font-size: 16px;
@@ -223,10 +222,15 @@
             <div class="game-content">
                 <div class="left-panel">
                     <div class="grid-wrapper">
-                        <table class="word-table">
-                            <tbody class="js-grid-body"></tbody>
-                        </table>
-                        <svg class="svg-overlay js-svg-overlay"></svg>
+                        <div class="table-relative-box">
+                            <table class="word-table">
+                                <tbody class="js-grid-body"></tbody>
+                            </table>
+                            <svg class="svg-overlay js-svg-overlay">
+                                <g class="js-hint-group"></g>
+                                <g class="js-found-group"></g>
+                            </svg>
+                        </div>
                     </div>
                 </div>
 
@@ -306,8 +310,9 @@
                     word.clickedIndices = [];
                 });
 
-                this.$el.find('.js-grid-body td').removeClass('is-lit is-test-hint');
-                this.$el.find('.js-svg-overlay').empty();
+                this.$el.find('.js-grid-body td').removeClass('is-lit');
+                this.$el.find('.js-hint-group').empty();
+                this.$el.find('.js-found-group').empty();
 
                 this.$el.find('.js-q-num').text(this.currentQuestion.questionNum);
                 this.$el.find('.js-q-text').html(this.currentQuestion.questionText);
@@ -360,9 +365,13 @@
 
                         word.cells.forEach(function (cell) {
                             var $c = self.getCellElement(cell.r, cell.c);
-                            $c.removeClass('is-lit is-test-hint');
+                            $c.removeClass('is-lit');
                         });
                     });
+
+                    if (this.isTestMode) {
+                        this.showTestHints();
+                    }
 
                     var isAllCleared = this.currentQuestion.words.every(function (w) {
                         return w.found;
@@ -382,9 +391,9 @@
                 return this.$el.find('.js-grid-body tr').eq(row).find('td').eq(col);
             };
 
-            // [변경] 완성된 단어 위에 교재와 매칭되는 핑크(마젠타) 색상 타원을 그려주는 메소드
-            WordSearchGame.prototype.drawEllipseForWord = function (word) {
-                var $svg = this.$el.find('.js-svg-overlay');
+            // 공통 타원 드로잉 메소드 (이제 .table-relative-box가 offsetParent가 되므로 완벽히 1:1 매칭됨)
+            WordSearchGame.prototype.drawBaseEllipse = function (word, targetContainer, styleAttrs) {
+                var $targetLayer = this.$el.find('.js-svg-overlay').find(targetContainer);
 
                 var startCell = this.getCellElement(word.cells[0].r, word.cells[0].c);
                 var endCell = this.getCellElement(
@@ -410,7 +419,6 @@
                 var dy = y2 - y1;
                 var distance = Math.sqrt(dx * dx + dy * dy);
 
-                // 구석 셀 컷팅 방지를 위해 패딩 비례 수치 적용
                 var rx = (distance + w1 * 0.78) / 2;
                 var ry = h1 * 0.44;
                 var angle = (Math.atan2(dy, dx) * 180) / Math.PI;
@@ -422,39 +430,62 @@
                 ellipse.setAttribute('ry', ry);
                 ellipse.setAttribute('transform', 'rotate(' + angle + ' ' + cx + ' ' + cy + ')');
 
-                // 이미지 디자인 맞춤: 마젠타 핫핑크 색상 적용
-                ellipse.setAttribute('stroke', '#ff007f');
-                ellipse.setAttribute('stroke-width', '4');
-                ellipse.setAttribute('fill', 'rgba(255, 0, 127, 0.08)');
+                Object.keys(styleAttrs).forEach(function (key) {
+                    ellipse.setAttribute(key, styleAttrs[key]);
+                });
 
-                $svg.append(ellipse);
+                $targetLayer.append(ellipse);
             };
 
-            // 콘솔 제어용 테스트 모드
-            WordSearchGame.prototype.toggleTestMode = function () {
-                this.isTestMode = !this.isTestMode;
-                if (this.isTestMode) {
-                    console.log('%c[WordGame] 테스트 힌트 활성화', 'color: #22c55e; font-weight: bold;');
-                    this.showTestHints();
-                } else {
-                    console.log('%c[WordGame] 테스트 힌트 비활성화', 'color: #ef4444; font-weight: bold;');
-                    this.clearTestHints();
-                }
+            // 정답을 찾았을 때 교재 스타일의 핑크 실선 타원 그리기
+            WordSearchGame.prototype.drawEllipseForWord = function (word) {
+                var successStyles = {
+                    stroke: '#ff007f',
+                    'stroke-width': '4',
+                    fill: 'rgba(255, 0, 127, 0.08)',
+                };
+                this.drawBaseEllipse(word, '.js-found-group', successStyles);
             };
 
+            // 콘솔 전용 테스트 모드 정답 힌트 (연한 푸른색 점선 타원으로 표시)
             WordSearchGame.prototype.showTestHints = function () {
                 var self = this;
+                this.$el.find('.js-hint-group').empty();
+
+                var hintStyles = {
+                    stroke: '#3182ce',
+                    'stroke-width': '3',
+                    'stroke-dasharray': '6,4',
+                    fill: 'none',
+                };
+
                 this.currentQuestion.words.forEach(function (word) {
                     if (!word.found) {
-                        word.cells.forEach(function (cell) {
-                            self.getCellElement(cell.r, cell.c).addClass('is-test-hint');
-                        });
+                        self.drawBaseEllipse(word, '.js-hint-group', hintStyles);
                     }
                 });
             };
 
             WordSearchGame.prototype.clearTestHints = function () {
-                this.$el.find('.js-grid-body td').removeClass('is-test-hint');
+                this.$el.find('.js-hint-group').empty();
+            };
+
+            // 콘솔 호출 인터페이스용 토글 함수
+            WordSearchGame.prototype.toggleTestMode = function () {
+                this.isTestMode = !this.isTestMode;
+                if (this.isTestMode) {
+                    console.log(
+                        '%c[WordGame] 테스트 힌트가 켜졌습니다.',
+                        'color: #3182ce; font-weight: bold;'
+                    );
+                    this.showTestHints();
+                } else {
+                    console.log(
+                        '%c[WordGame] 테스트 힌트가 꺼졌습니다.',
+                        'color: #ef4444; font-weight: bold;'
+                    );
+                    this.clearTestHints();
+                }
             };
 
             // 사운드 관련 Web Audio API
@@ -499,7 +530,7 @@
             };
 
             // ==========================================
-            // [데이터 반영] 이미지와 동일한 8x8 고정 단어판 데이터 구성
+            // 교재와 동일한 8x8 고정 단어판 데이터 구성
             // ==========================================
             var globalGameConfig = {
                 gridSize: { rows: 8, cols: 8 },
@@ -519,7 +550,6 @@
                         questionText:
                             '건강권 구현을 위한 건강자원의 평가 기준에는 이용 가능성, 접근 가능성, □□ 가능성, 질적 우수성이 있다.',
                         words: [
-                            // 이미지에 정답 후보 및 드로잉으로 예시되어 있는 정답 배치 세팅
                             {
                                 text: '수용',
                                 cells: [
