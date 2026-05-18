@@ -1,568 +1,497 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
-    <head>
-        <meta charset="UTF-8" />
-        <title>숨은 단어 찾기 게임 - 업데이트 버전</title>
-        <!-- jQuery CDN 등록 -->
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <style>
-            * {
-                box-sizing: border-box;
-                margin: 0;
-                padding: 0;
-            }
-            body {
-                font-family: 'Malgun Gothic', sans-serif;
-                background-color: #f5f6fa;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-            }
+<head>
+    <meta charset="UTF-8">
+    <title>숨은 단어 찾기 게임 - 얼럿 제거 버전</title>
+    <!-- jQuery CDN 등록 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background-color: #f5f6fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        /* 메인 게임 컨테이너 (좌우 배치) */
+        .game-container {
+            display: flex;
+            width: 900px;
+            height: 550px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
 
-            /* 메인 게임 컨테이너 (좌우 배치) */
-            .game-container {
-                display: flex;
-                width: 900px;
-                height: 550px;
-                background: #ffffff;
-                border-radius: 12px;
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-                overflow: hidden;
-            }
+        /* 좌측 영역: 단어 판 */
+        .left-panel {
+            flex: 1.2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8f9fa;
+            border-right: 2px solid #edf2f7;
+            padding: 20px;
+        }
+        .grid-wrapper {
+            position: relative;
+            display: inline-block;
+            overflow: visible; /* 타원이 외곽에서 잘리는 현상 방지 */
+        }
+        /* 단어 판 테이블 스타일 */
+        .word-table {
+            border-collapse: collapse;
+            user-select: none;
+        }
+        .word-table td {
+            width: 55px;
+            height: 55px;
+            border: 2px solid #cbd5e0;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: #2d3748;
+            cursor: pointer;
+            background-color: #ffffff;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        /* 글자가 켜졌을 때 스타일 (빨간색) */
+        .word-table td.is-lit {
+            color: #e53e3e !important;
+            background-color: #fff5f5;
+        }
+        
+        /* 테스트 모드 정답 힌트 스타일 */
+        .word-table td.is-test-hint {
+            background-color: #ebf8ff !important;
+            border: 2px dashed #3182ce !important;
+        }
 
-            /* 좌측 영역: 단어 판 */
-            .left-panel {
-                flex: 1.2;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                background-color: #f8f9fa;
-                border-right: 2px solid #edf2f7;
-                padding: 20px;
-            }
-            .grid-wrapper {
-                position: relative;
-                display: inline-block;
-                overflow: visible; /* 타원이 외곽에서 잘리는 현상 방지 */
-            }
-            /* 단어 판 테이블 스타일 */
-            .word-table {
-                border-collapse: collapse;
-                user-select: none;
-            }
-            .word-table td {
-                width: 55px;
-                height: 55px;
-                border: 2px solid #cbd5e0;
-                text-align: center;
-                font-size: 22px;
-                font-weight: bold;
-                color: #2d3748;
-                cursor: pointer;
-                background-color: #ffffff;
-                transition:
-                    background-color 0.2s,
-                    color 0.2s;
-            }
-            /* 글자가 켜졌을 때 스타일 (빨간색) */
-            .word-table td.is-lit {
-                color: #e53e3e !important;
-                background-color: #fff5f5;
-            }
+        /* 타원 표시용 SVG 오버레이 */
+        .svg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* 클릭 이벤트 투과 */
+            z-index: 10;
+            overflow: visible; /* 구석 단어 선택 시 타원 잘림 방지 극대화 */
+        }
 
-            /* [기능 추가] 테스트 모드 정답 힌트 스타일 */
-            .word-table td.is-test-hint {
-                background-color: #ebf8ff !important;
-                border: 2px dashed #3182ce !important;
-            }
+        /* 우측 영역: 문제 및 제어 */
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 40px;
+        }
+        /* 우측 중앙: 문제 상자 */
+        .question-box {
+            margin: auto 0;
+            text-align: center;
+        }
+        .question-number {
+            font-size: 18px;
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .question-text {
+            font-size: 24px;
+            color: #1a202c;
+            font-weight: bold;
+            line-height: 1.6;
+            word-break: keep-all;
+        }
+        /* 우측 하단: 제어 상자 */
+        .control-box {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .btn {
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .reset-btn {
+            color: #ffffff;
+            background-color: #3182ce;
+        }
+        .reset-btn:hover {
+            background-color: #2b6cb0;
+        }
+        /* 테스트 모드 버튼 스타일 */
+        .test-btn {
+            color: #4a5568;
+            background-color: #edf2f7;
+            border: 1px solid #cbd5e0;
+        }
+        .test-btn.is-active {
+            color: #ffffff;
+            background-color: #e53e3e;
+            border-color: #e53e3e;
+        }
+    </style>
+</head>
+<body>
 
-            /* 타원 표시용 SVG 오버레이 */
-            .svg-overlay {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                pointer-events: none; /* 클릭 이벤트 투과 */
-                z-index: 10;
-                overflow: visible; /* 구석 단어 선택 시 타원 잘림 방지 극대화 */
-            }
-
-            /* 우측 영역: 문제 및 제어 */
-            .right-panel {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                padding: 40px;
-            }
-            /* 우측 중앙: 문제 상자 */
-            .question-box {
-                margin: auto 0;
-                text-align: center;
-            }
-            .question-number {
-                font-size: 18px;
-                color: #4a5568;
-                font-weight: 600;
-                margin-bottom: 10px;
-            }
-            .question-text {
-                font-size: 24px;
-                color: #1a202c;
-                font-weight: bold;
-                line-height: 1.6;
-                word-break: keep-all;
-            }
-            /* 우측 하단: 제어 상자 */
-            .control-box {
-                display: flex;
-                justify-content: flex-end;
-                gap: 10px;
-            }
-            .btn {
-                padding: 12px 24px;
-                font-size: 15px;
-                font-weight: bold;
-                border: none;
-                border-radius: 6px;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-            .reset-btn {
-                color: #ffffff;
-                background-color: #3182ce;
-            }
-            .reset-btn:hover {
-                background-color: #2b6cb0;
-            }
-            /* 테스트 모드 버튼 스타일 */
-            .test-btn {
-                color: #4a5568;
-                background-color: #edf2f7;
-                border: 1px solid #cbd5e0;
-            }
-            .test-btn.is-active {
-                color: #ffffff;
-                background-color: #e53e3e;
-                border-color: #e53e3e;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="game-container" id="wordGame">
-            <!-- 좌측 단어 판 -->
-            <div class="left-panel">
-                <div class="grid-wrapper">
-                    <table class="word-table">
-                        <tbody class="js-grid-body"></tbody>
-                    </table>
-                    <!-- 정답 타원을 그릴 SVG -->
-                    <svg class="svg-overlay js-svg-overlay"></svg>
-                </div>
-            </div>
-
-            <!-- 우측 내용 정보 -->
-            <div class="right-panel">
-                <div class="question-box">
-                    <div class="question-number js-q-num">준비 중</div>
-                    <div class="question-text js-q-text">문제를 불러오는 중입니다...</div>
-                </div>
-                <div class="control-box">
-                    <button class="btn test-btn js-test-btn">테스트 모드 OFF</button>
-                    <button class="btn reset-btn js-reset-btn">다시 하기</button>
-                </div>
-            </div>
+<div class="game-container" id="wordGame">
+    <!-- 좌측 단어 판 -->
+    <div class="left-panel">
+        <div class="grid-wrapper">
+            <table class="word-table">
+                <tbody class="js-grid-body"></tbody>
+            </table>
+            <!-- 정답 타원을 그릴 SVG -->
+            <svg class="svg-overlay js-svg-overlay"></svg>
         </div>
+    </div>
+    
+    <!-- 우측 내용 정보 -->
+    <div class="right-panel">
+        <div class="question-box">
+            <div class="question-number js-q-num">준비 중</div>
+            <div class="question-text js-q-text">문제를 불러오는 중입니다...</div>
+        </div>
+        <div class="control-box">
+            <button class="btn test-btn js-test-btn">테스트 모드 OFF</button>
+            <button class="btn reset-btn js-reset-btn">다시 하기</button>
+        </div>
+    </div>
+</div>
 
-        <script>
-            // ==========================================
-            // ES5 형태의 숨은 단어 찾기 게임 로직 클래스
-            // ==========================================
-            function WordSearchGame(elementId, gameConfig) {
-                this.$el = $(elementId);
-                this.gridConfig = {
-                    size: gameConfig.gridSize,
-                    letters: gameConfig.gridLetters,
-                };
-                this.questions = gameConfig.questions;
+<script>
+// ==========================================
+// ES5 형태의 숨은 단어 찾기 게임 로직 클래스
+// ==========================================
+function WordSearchGame(elementId, gameConfig) {
+    this.$el = $(elementId);
+    this.gridConfig = {
+        size: gameConfig.gridSize,
+        letters: gameConfig.gridLetters
+    };
+    this.questions = gameConfig.questions;
+    
+    this.currentIdx = 0;
+    this.currentQuestion = null;
+    this.isTestMode = false;
 
-                this.currentIdx = 0;
-                this.currentQuestion = null;
-                this.isTestMode = false; // 테스트 모드 상태 플래그
+    this.init();
+}
 
-                this.init();
-            }
+// 최초 1회 초기화 및 기믹 연결
+WordSearchGame.prototype.init = function() {
+    var self = this;
+    
+    this.renderStaticGrid();
 
-            // 최초 1회 초기화 및 기믹 연결
-            WordSearchGame.prototype.init = function () {
-                var self = this;
+    this.$el.find('.js-reset-btn').on('click', function() {
+        self.loadQuestion(self.currentIdx);
+    });
 
-                // 1. 고정 단어판(Grid) 테이블을 최초 1회만 생성
-                this.renderStaticGrid();
+    this.$el.find('.js-test-btn').on('click', function() {
+        self.toggleTestMode();
+    });
 
-                // 2. 다시 하기 버튼 이벤트 바인딩
-                this.$el.find('.js-reset-btn').on('click', function () {
-                    self.loadQuestion(self.currentIdx);
-                });
+    this.loadQuestion(this.currentIdx);
+};
 
-                // 3. 테스트 모드 버튼 이벤트 바인딩
-                this.$el.find('.js-test-btn').on('click', function () {
-                    self.toggleTestMode();
-                });
-
-                // 4. 첫 번째 문제 로드
-                this.loadQuestion(this.currentIdx);
-            };
-
-            // 고정 단어판 최초 렌더링
-            WordSearchGame.prototype.renderStaticGrid = function () {
-                var self = this;
-                var $tbody = this.$el.find('.js-grid-body').empty();
-
-                for (var r = 0; r < this.gridConfig.size.rows; r++) {
-                    var $tr = $('<tr></tr>');
-                    for (var c = 0; c < this.gridConfig.size.cols; c++) {
-                        var letter = this.gridConfig.letters[r][c] || '';
-                        var $td = $('<td></td>').text(letter).attr('data-row', r).attr('data-col', c);
-
-                        // 글자 클릭 이벤트 바인딩 (판은 고정이므로 이벤트도 유지됨)
-                        $td.on('click', function () {
-                            self.handleCellClick($(this));
-                        });
-
-                        $tr.append($td);
-                    }
-                    $tbody.append($tr);
-                }
-            };
-
-            // 특정 인덱스의 문제 세팅 메소드
-            WordSearchGame.prototype.loadQuestion = function (index) {
-                if (index >= this.questions.length) {
-                    alert('모든 문제를 맞히셨습니다! 처음 문제로 돌아갑니다.');
-                    this.currentIdx = 0;
-                    index = 0;
-                }
-
-                this.currentIdx = index;
-                // 질문 데이터 원본 유지를 위한 깊은 복사
-                this.currentQuestion = $.extend(true, {}, this.questions[index]);
-
-                // 맞춘 상태값 데이터 구조화 초기화
-                this.currentQuestion.words.forEach(function (word) {
-                    word.found = false;
-                    word.clickedIndices = [];
-                });
-
-                // 판의 스타일 상태 및 SVG 오버레이 초기화 (글자 내용 자체는 유지)
-                this.$el.find('.js-grid-body td').removeClass('is-lit is-test-hint');
-                this.$el.find('.js-svg-overlay').empty();
-
-                // 우측 문제 텍스트 업데이트
-                this.$el.find('.js-q-num').text('문제 ' + this.currentQuestion.questionNum);
-                this.$el.find('.js-q-text').html(this.currentQuestion.questionText);
-
-                // 테스트 모드가 켜져있다면 정답 힌트 즉시 표시
-                if (this.isTestMode) {
-                    this.showTestHints();
-                }
-            };
-
-            // 글자 칸 클릭 핸들러
-            WordSearchGame.prototype.handleCellClick = function ($cell) {
-                var self = this;
-
-                // 이미 빨갛게 불이 켜진 글자는 중복 클릭 방지 처리
-                if ($cell.hasClass('is-lit')) {
-                    return;
-                }
-
-                var row = parseInt($cell.attr('data-row'), 10);
-                var col = parseInt($cell.attr('data-col'), 10);
-                var matched = false;
-                var completedWords = [];
-
-                // 현재 문제의 활성화된 단어 좌표들 탐색
-                this.currentQuestion.words.forEach(function (word) {
-                    if (word.found) return;
-
-                    var idx = -1;
-                    for (var i = 0; i < word.cells.length; i++) {
-                        if (word.cells[i].r === row && word.cells[i].c === col) {
-                            idx = i;
-                            break;
-                        }
-                    }
-
-                    if (idx !== -1) {
-                        matched = true;
-                        if (word.clickedIndices.indexOf(idx) === -1) {
-                            word.clickedIndices.push(idx);
-                        }
-                        if (word.clickedIndices.length === word.cells.length) {
-                            completedWords.push(word);
-                        }
-                    }
-                });
-
-                if (matched) {
-                    // 정답 글자일 경우 빨간 불 켜기
-                    $cell.addClass('is-lit');
-
-                    // 단어 완성 시 처리 기믹
-                    completedWords.forEach(function (word) {
-                        word.found = true;
-
-                        // 최적화된 타원 그리기 호출
-                        self.drawEllipseForWord(word);
-
-                        // 해당 단어에 포함된 칸들의 빨간색 제거 및 테스트 모드 힌트 클래스 제거
-                        word.cells.forEach(function (cell) {
-                            var $c = self.getCellElement(cell.r, cell.c);
-                            $c.removeClass('is-lit is-test-hint');
-                        });
-                    });
-
-                    // 문제 클리어 여부 확인
-                    var isAllCleared = this.currentQuestion.words.every(function (w) {
-                        return w.found;
-                    });
-                    if (isAllCleared) {
-                        this.playSuccessSound();
-                        setTimeout(function () {
-                            alert('정답입니다! 다음 문제로 넘어갑니다.');
-                            self.loadQuestion(self.currentIdx + 1);
-                        }, 500);
-                    }
-                } else {
-                    // [수정] 오답일 경우 오답 효과음 재생
-                    this.playFailureSound();
-                }
-            };
-
-            // 좌표기반 셀 Element 탐색 유틸리티
-            WordSearchGame.prototype.getCellElement = function (row, col) {
-                return this.$el.find('.js-grid-body tr').eq(row).find('td').eq(col);
-            };
-
-            // [수정] 완성된 단어 위에 타원을 그려주는 메소드 (타원 크기 최적화)
-            WordSearchGame.prototype.drawEllipseForWord = function (word) {
-                var $svg = this.$el.find('.js-svg-overlay');
-
-                var startCell = this.getCellElement(word.cells[0].r, word.cells[0].c);
-                var endCell = this.getCellElement(
-                    word.cells[word.cells.length - 1].r,
-                    word.cells[word.cells.length - 1].c
-                );
-
-                var pos1 = startCell.position();
-                var pos2 = endCell.position();
-
-                var w1 = startCell.outerWidth();
-                var h1 = startCell.outerHeight();
-
-                var x1 = pos1.left + w1 / 2;
-                var y1 = pos1.top + h1 / 2;
-                var x2 = pos2.left + w1 / 2;
-                var y2 = pos2.top + h1 / 2;
-
-                var cx = (x1 + x2) / 2;
-                var cy = (y1 + y2) / 2;
-
-                var dx = x2 - x1;
-                var dy = y2 - y1;
-                var distance = Math.sqrt(dx * dx + dy * dy);
-
-                // 타원 크기를 글자 경계선에 딱 맞도록 컴팩트하게 배율 수정 (패딩 축소)
-                var rx = (distance + w1 * 0.75) / 2;
-                var ry = h1 * 0.42;
-                var angle = (Math.atan2(dy, dx) * 180) / Math.PI;
-
-                var ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-                ellipse.setAttribute('cx', cx);
-                ellipse.setAttribute('cy', cy);
-                ellipse.setAttribute('rx', rx);
-                ellipse.setAttribute('ry', ry);
-                ellipse.setAttribute('transform', 'rotate(' + angle + ' ' + cx + ' ' + cy + ')');
-                ellipse.setAttribute('stroke', '#38a169');
-                ellipse.setAttribute('stroke-width', '3');
-                ellipse.setAttribute('fill', 'rgba(72, 187, 120, 0.15)');
-
-                $svg.append(ellipse);
-            };
-
-            // [기능 추가] 테스트 모드 작동 스위치 토글
-            WordSearchGame.prototype.toggleTestMode = function () {
-                this.isTestMode = !this.isTestMode;
-                var $btn = this.$el.find('.js-test-btn');
-
-                if (this.isTestMode) {
-                    $btn.addClass('is-active').text('테스트 모드 ON');
-                    this.showTestHints();
-                } else {
-                    $btn.removeClass('is-active').text('테스트 모드 OFF');
-                    this.clearTestHints();
-                }
-            };
-
-            // 테스트 모드 활성화: 아직 못 찾은 정답 단어 셀들에 테두리 힌트 부여
-            WordSearchGame.prototype.showTestHints = function () {
-                var self = this;
-                this.currentQuestion.words.forEach(function (word) {
-                    if (!word.found) {
-                        word.cells.forEach(function (cell) {
-                            self.getCellElement(cell.r, cell.c).addClass('is-test-hint');
-                        });
-                    }
-                });
-            };
-
-            // 테스트 모드 비활성화: 표시된 힌트 클래스 전체 일괄 제거
-            WordSearchGame.prototype.clearTestHints = function () {
-                this.$el.find('.js-grid-body td').removeClass('is-test-hint');
-            };
-
-            // [수정] Web Audio API를 활용한 정답 효과음 (음량 증폭 버전)
-            WordSearchGame.prototype.playSuccessSound = function () {
-                try {
-                    var AudioContext = window.AudioContext || window.webkitAudioContext;
-                    if (!AudioContext) return;
-
-                    var ctx = new AudioContext();
-                    var now = ctx.currentTime;
-                    var osc = ctx.createOscillator();
-                    var gain = ctx.createGain();
-
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(523.25, now); // 도 (C5)
-                    osc.frequency.setValueAtTime(783.99, now + 0.1); // 솔 (G5)
-
-                    gain.gain.setValueAtTime(0.5, now); // 음량 증가 (0.2 -> 0.5)
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start(now);
-                    osc.stop(now + 0.4);
-                } catch (e) {
-                    console.warn(e);
-                }
-            };
-
-            // [기능 추가] Web Audio API를 활용한 오답 효과음 (낮은 부저음)
-            WordSearchGame.prototype.playFailureSound = function () {
-                try {
-                    var AudioContext = window.AudioContext || window.webkitAudioContext;
-                    if (!AudioContext) return;
-
-                    var ctx = new AudioContext();
-                    var now = ctx.currentTime;
-                    var osc = ctx.createOscillator();
-                    var gain = ctx.createGain();
-
-                    osc.type = 'triangle'; // 무겁고 부드러운 오답 톤용 파형 선택
-                    osc.frequency.setValueAtTime(180, now); // 낮은 주파수 설정
-                    osc.frequency.linearRampToValueAtTime(130, now + 0.15); // 음을 낮추는 하향 슬라이드 효과
-
-                    gain.gain.setValueAtTime(0.4, now); // 명확한 피드백 음량
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start(now);
-                    osc.stop(now + 0.15);
-                } catch (e) {
-                    console.warn(e);
-                }
-            };
-
-            // ==========================================
-            // [구조 수정] 단어판 고정형 게임 데이터 정의
-            // ==========================================
-            var globalGameConfig = {
-                // 단어판 크기와 글자는 전체 게임 내에서 최초 1회만 선언 및 고정됩니다.
-                gridSize: { rows: 5, cols: 5 },
-                gridLetters: [
-                    ['사', '과', '배', '포', '도'],
-                    ['바', '나', '나', '귤', '수'],
-                    ['박', '멜', '론', '참', '외'],
-                    ['딸', '기', '앵', '두', '감'],
-                    ['자', '두', '레', '몬', '라'],
-                ],
-                // 문제들은 위의 고정판 내부의 좌표를 조율하여 출제됩니다.
-                questions: [
-                    {
-                        questionNum: 1,
-                        questionText: '새콤달콤 빨간 과일은? (□□)<br>길고 노란 열대 과일은? (□□□)',
-                        words: [
-                            {
-                                text: '사과',
-                                cells: [
-                                    { r: 0, c: 0 },
-                                    { r: 0, c: 1 },
-                                ],
-                            },
-                            {
-                                text: '바나나',
-                                cells: [
-                                    { r: 1, c: 0 },
-                                    { r: 1, c: 1 },
-                                    { r: 1, c: 2 },
-                                ],
-                            },
-                        ],
-                    },
-                    {
-                        questionNum: 2,
-                        questionText: '보라색 포도송이! (□□)<br>그리운 초록빛 과일! (□□)',
-                        words: [
-                            {
-                                text: '포도',
-                                cells: [
-                                    { r: 0, c: 3 },
-                                    { r: 0, c: 4 },
-                                ],
-                            },
-                            {
-                                text: '멜론',
-                                cells: [
-                                    { r: 2, c: 1 },
-                                    { r: 2, c: 2 },
-                                ],
-                            },
-                        ],
-                    },
-                    {
-                        questionNum: 3,
-                        questionText: '여름의 왕자! (□□)<br>새콤한 노란 시트러스! (□□)',
-                        words: [
-                            {
-                                text: '수박',
-                                cells: [
-                                    { r: 1, c: 4 },
-                                    { r: 2, c: 0 },
-                                ],
-                            }, // 대각선 형태 연결 배치 예시
-                            {
-                                text: '레몬',
-                                cells: [
-                                    { r: 4, c: 2 },
-                                    { r: 4, c: 3 },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            };
-
-            // ==========================================
-            // 게임 구동
-            // ==========================================
-            $(document).ready(function () {
-                var game = new WordSearchGame('#wordGame', globalGameConfig);
+// 고정 단어판 최초 렌더링
+WordSearchGame.prototype.renderStaticGrid = function() {
+    var self = this;
+    var $tbody = this.$el.find('.js-grid-body').empty();
+    
+    for (var r = 0; r < this.gridConfig.size.rows; r++) {
+        var $tr = $('<tr></tr>');
+        for (var c = 0; c < this.gridConfig.size.cols; c++) {
+            var letter = this.gridConfig.letters[r][c] || '';
+            var $td = $('<td></td>')
+                .text(letter)
+                .attr('data-row', r)
+                .attr('data-col', c);
+            
+            $td.on('click', function() {
+                self.handleCellClick($(this));
             });
-        </script>
-    </body>
+
+            $tr.append($td);
+        }
+        $tbody.append($tr);
+    }
+};
+
+// 특정 인덱스의 문제 세팅 메소드
+WordSearchGame.prototype.loadQuestion = function(index) {
+    // 모든 문제를 풀었을 경우 alert 없이 처음 문제로 부드럽게 순환
+    if (index >= this.questions.length) {
+        this.currentIdx = 0;
+        index = 0;
+    }
+
+    this.currentIdx = index;
+    this.currentQuestion = $.extend(true, {}, this.questions[index]);
+
+    this.currentQuestion.words.forEach(function(word) {
+        word.found = false;
+        word.clickedIndices = [];
+    });
+
+    this.$el.find('.js-grid-body td').removeClass('is-lit is-test-hint');
+    this.$el.find('.js-svg-overlay').empty();
+
+    this.$el.find('.js-q-num').text("문제 " + this.currentQuestion.questionNum);
+    this.$el.find('.js-q-text').html(this.currentQuestion.questionText);
+
+    if (this.isTestMode) {
+        this.showTestHints();
+    }
+};
+
+// 글자 칸 클릭 핸들러
+WordSearchGame.prototype.handleCellClick = function($cell) {
+    var self = this;
+    
+    if ($cell.hasClass('is-lit')) {
+        return;
+    }
+
+    var row = parseInt($cell.attr('data-row'), 10);
+    var col = parseInt($cell.attr('data-col'), 10);
+    var matched = false;
+    var completedWords = [];
+
+    this.currentQuestion.words.forEach(function(word) {
+        if (word.found) return;
+
+        var idx = -1;
+        for (var i = 0; i < word.cells.length; i++) {
+            if (word.cells[i].r === row && word.cells[i].c === col) {
+                idx = i;
+                break;
+            }
+        }
+
+        if (idx !== -1) {
+            matched = true;
+            if (word.clickedIndices.indexOf(idx) === -1) {
+                word.clickedIndices.push(idx);
+            }
+            if (word.clickedIndices.length === word.cells.length) {
+                completedWords.push(word);
+            }
+        }
+    });
+
+    if (matched) {
+        $cell.addClass('is-lit');
+
+        completedWords.forEach(function(word) {
+            word.found = true;
+            self.drawEllipseForWord(word);
+
+            word.cells.forEach(function(cell) {
+                var $c = self.getCellElement(cell.r, cell.c);
+                $c.removeClass('is-lit is-test-hint');
+            });
+        });
+
+        var isAllCleared = this.currentQuestion.words.every(function(w) { return w.found; });
+        if (isAllCleared) {
+            this.playSuccessSound();
+            // [수정] alert 창을 제거하고, 효과음 여운(0.6초)을 준 뒤 바로 다음 문제 로드
+            setTimeout(function() {
+                self.loadQuestion(self.currentIdx + 1);
+            }, 600);
+        }
+    } else {
+        this.playFailureSound();
+    }
+};
+
+WordSearchGame.prototype.getCellElement = function(row, col) {
+    return this.$el.find('.js-grid-body tr').eq(row).find('td').eq(col);
+};
+
+// 완성된 단어 위에 타원을 그려주는 메소드
+WordSearchGame.prototype.drawEllipseForWord = function(word) {
+    var $svg = this.$el.find('.js-svg-overlay');
+    
+    var startCell = this.getCellElement(word.cells[0].r, word.cells[0].c);
+    var endCell = this.getCellElement(word.cells[word.cells.length - 1].r, word.cells[word.cells.length - 1].c);
+
+    var pos1 = startCell.position();
+    var pos2 = endCell.position();
+
+    var w1 = startCell.outerWidth();
+    var h1 = startCell.outerHeight();
+
+    var x1 = pos1.left + w1 / 2;
+    var y1 = pos1.top + h1 / 2;
+    var x2 = pos2.left + w1 / 2;
+    var y2 = pos2.top + h1 / 2;
+
+    var cx = (x1 + x2) / 2;
+    var cy = (y1 + y2) / 2;
+
+    var dx = x2 - x1;
+    var dy = y2 - y1;
+    var distance = Math.sqrt(dx * dx + dy * dy);
+
+    var rx = (distance + w1 * 0.75) / 2; 
+    var ry = h1 * 0.42; 
+    var angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+    var ellipse = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+    ellipse.setAttribute("cx", cx);
+    ellipse.setAttribute("cy", cy);
+    ellipse.setAttribute("rx", rx);
+    ellipse.setAttribute("ry", ry);
+    ellipse.setAttribute("transform", "rotate(" + angle + " " + cx + " " + cy + ")");
+    ellipse.setAttribute("stroke", "#38a169"); 
+    ellipse.setAttribute("stroke-width", "3");
+    ellipse.setAttribute("fill", "rgba(72, 187, 120, 0.15)"); 
+
+    $svg.append(ellipse);
+};
+
+// 테스트 모드 토글
+WordSearchGame.prototype.toggleTestMode = function() {
+    this.isTestMode = !this.isTestMode;
+    var $btn = this.$el.find('.js-test-btn');
+    
+    if (this.isTestMode) {
+        $btn.addClass('is-active').text("테스트 모드 ON");
+        this.showTestHints();
+    } else {
+        $btn.removeClass('is-active').text("테스트 모드 OFF");
+        this.clearTestHints();
+    }
+};
+
+WordSearchGame.prototype.showTestHints = function() {
+    var self = this;
+    this.currentQuestion.words.forEach(function(word) {
+        if (!word.found) {
+            word.cells.forEach(function(cell) {
+                self.getCellElement(cell.r, cell.c).addClass('is-test-hint');
+            });
+        }
+    });
+};
+
+WordSearchGame.prototype.clearTestHints = function() {
+    this.$el.find('.js-grid-body td').removeClass('is-test-hint');
+};
+
+// 정답 효과음
+WordSearchGame.prototype.playSuccessSound = function() {
+    try {
+        var AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        
+        var ctx = new AudioContext();
+        var now = ctx.currentTime;
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, now); 
+        osc.frequency.setValueAtTime(783.99, now + 0.1); 
+        
+        gain.gain.setValueAtTime(0.5, now); 
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.4);
+    } catch (e) { console.warn(e); }
+};
+
+// 오답 효과음
+WordSearchGame.prototype.playFailureSound = function() {
+    try {
+        var AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        
+        var ctx = new AudioContext();
+        var now = ctx.currentTime;
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        
+        osc.type = 'triangle'; 
+        osc.frequency.setValueAtTime(180, now); 
+        osc.frequency.linearRampToValueAtTime(130, now + 0.15); 
+        
+        gain.gain.setValueAtTime(0.4, now); 
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.15);
+    } catch (e) { console.warn(e); }
+};
+
+// ==========================================
+// 고정형 게임 데이터 정의 
+// ==========================================
+var globalGameConfig = {
+    gridSize: { rows: 5, cols: 5 },
+    gridLetters: [
+        ['사', '과', '배', '포', '도'],
+        ['바', '나', '나', '귤', '수'],
+        ['박', '멜', '론', '참', '외'],
+        ['딸', '기', '앵', '두', '감'],
+        ['자', '두', '레', '몬', '라']
+    ],
+    questions: [
+        {
+            questionNum: 1,
+            questionText: "새콤달콤 빨간 과일은? (□□)<br>길고 노란 열대 과일은? (□□□)",
+            words: [
+                { text: "사과", cells: [{r: 0, c: 0}, {r: 0, c: 1}] },
+                { text: "바나나", cells: [{r: 1, c: 0}, {r: 1, c: 1}, {r: 1, c: 2}] }
+            ]
+        },
+        {
+            questionNum: 2,
+            questionText: "보라색 포도송이! (□□)<br>그리운 초록빛 과일! (□□)",
+            words: [
+                { text: "포도", cells: [{r: 0, c: 3}, {r: 0, c: 4}] },
+                { text: "멜론", cells: [{r: 2, c: 1}, {r: 2, c: 2}] }
+            ]
+        },
+        {
+            questionNum: 3,
+            questionText: "여름의 왕자! (□□)<br>새콤한 노란 시트러스! (□□)",
+            words: [
+                { text: "수박", cells: [{r: 1, c: 4}, {r: 2, c: 0}] }, 
+                { text: "레몬", cells: [{r: 4, c: 2}, {r: 4, c: 3}] }
+            ]
+        }
+    ]
+};
+
+$(document).ready(function() {
+    var game = new WordSearchGame('#wordGame', globalGameConfig);
+});
+</script>
+
+</body>
 </html>
