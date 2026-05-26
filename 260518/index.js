@@ -167,22 +167,25 @@ WordSearchGame.prototype.getCellElement = function (row, col) {
     return this.$el.find('.js-grid-body tr').eq(row).find('td').eq(col);
 };
 
-// 공통 타원 드로잉 메소드
-WordSearchGame.prototype.drawBaseEllipse = function (word, targetContainer, styleAttrs) {
+// 공통 타원 드로잉 메소드 (CSS Transform Scale 좌표 왜곡 완벽 보정 버전)
+WordSearchGame.prototype.drawBaseEllipse = function(word, targetContainer, styleAttrs){
     var $targetLayer = this.$el.find('.js-svg-overlay').find(targetContainer);
 
-    var startCell = this.getCellElement(word.cells[0].r, word.cells[0].c);
-    var endCell = this.getCellElement(
-        word.cells[word.cells.length - 1].r,
-        word.cells[word.cells.length - 1].c
-    );
+    // jQuery 객체에서 실제 DOM 원소(td) 추출
+    var startCellDom = this.getCellElement(word.cells[0].r, word.cells[0].c)[0];
+    var endCellDom = this.getCellElement(word.cells[word.cells.length - 1].r, word.cells[word.cells.length - 1].c)[0];
 
-    var pos1 = startCell.position();
-    var pos2 = endCell.position();
+    if (!startCellDom || !endCellDom) return;
 
-    var w1 = startCell.outerWidth();
-    var h1 = startCell.outerHeight();
+    // [핵심 변경] .position() 대신 transform의 영향을 받지 않는 offsetLeft / offsetTop 사용
+    var pos1 = { left: startCellDom.offsetLeft, top: startCellDom.offsetTop };
+    var pos2 = { left: endCellDom.offsetLeft, top: endCellDom.offsetTop };
 
+    // 크기 역시 transform 스케일 이전의 고정 크기 사용
+    var w1 = startCellDom.offsetWidth;
+    var h1 = startCellDom.offsetHeight;
+
+    // 중심점 및 반지름 계산 (이제 원본 1920x1020 스케일 가상 공간 안에서 완벽히 일치함)
     var x1 = pos1.left + w1 / 2;
     var y1 = pos1.top + h1 / 2;
     var x2 = pos2.left + w1 / 2;
@@ -197,16 +200,16 @@ WordSearchGame.prototype.drawBaseEllipse = function (word, targetContainer, styl
 
     var rx = (distance + w1 * 0.78) / 2;
     var ry = h1 * 0.44;
-    var angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+    var angle = Math.atan2(dy, dx) * 180 / Math.PI;
 
-    var ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-    ellipse.setAttribute('cx', cx);
-    ellipse.setAttribute('cy', cy);
-    ellipse.setAttribute('rx', rx);
-    ellipse.setAttribute('ry', ry);
-    ellipse.setAttribute('transform', 'rotate(' + angle + ' ' + cx + ' ' + cy + ')');
+    var ellipse = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+    ellipse.setAttribute("cx", cx);
+    ellipse.setAttribute("cy", cy);
+    ellipse.setAttribute("rx", rx);
+    ellipse.setAttribute("ry", ry);
+    ellipse.setAttribute("transform", "rotate(" + angle + " " + cx + " " + cy + ")");
 
-    Object.keys(styleAttrs).forEach(function (key) {
+    Object.keys(styleAttrs).forEach(function(key){
         ellipse.setAttribute(key, styleAttrs[key]);
     });
 
