@@ -1,0 +1,198 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    background-color: #eef2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+}
+
+/* 메인 전체 외곽 컨테이너 */
+.main-wrapper {
+    width: 1000px;
+    background: #ffffff;
+    border-radius: 32px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.05);
+    padding: 35px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 상단 타이틀 영역 스타일 */
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 15px;
+}
+.header-title-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.badge-blue {
+    background-color: #3b82f6;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 6px 16px;
+    border-radius: 20px;
+}
+.main-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1e293b;
+}
+.instruction-text {
+    font-size: 15px;
+    color: #ef4444;
+    font-weight: 600;
+}
+
+/* 가이드 지문 영역 */
+.guide-intro {
+    font-size: 18px;
+    color: #334155;
+    font-weight: bold;
+    line-height: 1.5;
+    margin-bottom: 5px;
+}
+
+/* 콘텐츠 배치 영역 (좌/우) */
+.game-content {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+/* 좌측 영역: 단어 판 */
+.left-panel {
+    flex: 1.1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 주황색 테두리 역할만 수행하는 배경 박스 */
+.grid-wrapper {
+    background-color: #f3cda2;
+    padding: 8px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+/* [핵심 수정] 테이블과 SVG를 1:1 크기로 묶어주는 기준점 박스 */
+.table-relative-box {
+    position: relative;
+    display: block;
+}
+
+/* 단어 판 테이블 스타일 */
+.word-table {
+    border-collapse: collapse;
+    user-select: none;
+    background-color: #ffffff;
+}
+.word-table td {
+    width: 52px;
+    height: 52px;
+    border: 2px solid #f3cda2;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: #2d3748;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+/* 글자가 선택되어 켜졌을 때 스타일 (임시 피드백) */
+.word-table td.is-lit {
+    background-color: #fff1f2;
+    color: #f43f5e;
+}
+
+/* [핵심 수정] 이제 테이블 박스 크기와 정확히 일치하게 오버레이됨 */
+.svg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+    overflow: visible;
+}
+
+/* 우측 영역: 문제 및 제어 */
+.right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* 우측 중앙: 교재 스타일의 파스텔 블루 문제 상자 */
+.question-box {
+    background-color: #eaf4f7;
+    border-radius: 16px;
+    padding: 30px;
+    position: relative;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+/* 문제 번호 배지 */
+.question-number {
+    position: absolute;
+    top: -15px;
+    left: 20px;
+    background-color: #87b9c7;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 4px 18px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+.question-text {
+    font-size: 20px;
+    color: #2d3748;
+    font-weight: bold;
+    line-height: 1.7;
+    word-break: keep-all;
+    margin-top: 10px;
+}
+
+/* 우측 하단: 제어 상자 */
+.control-box {
+    display: flex;
+    justify-content: flex-end;
+}
+/* 다시하기 하늘색 알약 버튼 */
+.reset-btn {
+    padding: 12px 32px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #52bccc;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(82, 188, 204, 0.3);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.reset-btn:hover {
+    background-color: #43aab9;
+    transform: translateY(-1px);
+}
