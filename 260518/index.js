@@ -27,7 +27,7 @@ WordSearchGame.prototype.init = function () {
     this.loadQuestion(this.currentIdx);
 
     // 화면 해상도 변화에 대응하는 반응형 스케일 기능 연결
-    this.initResponsiveScale();
+    // this.initResponsiveScale();
 };
 
 WordSearchGame.prototype.initResponsiveScale = function () {
