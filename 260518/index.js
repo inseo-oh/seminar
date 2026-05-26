@@ -25,6 +25,31 @@ WordSearchGame.prototype.init = function () {
     });
 
     this.loadQuestion(this.currentIdx);
+
+    // 화면 해상도 변화에 대응하는 반응형 스케일 기능 연결
+    this.initResponsiveScale();
+};
+
+WordSearchGame.prototype.initResponsiveScale = function () {
+    var self = this;
+    var targetW = 1920;
+    var targetH = 1020;
+
+    function resizeGame() {
+        var windowW = $(window).width();
+        var windowH = $(window).height();
+
+        var scaleW = windowW / targetW;
+        var scaleH = windowH / targetH;
+        var scale = Math.min(scaleW, scaleH);
+
+        self.$el.css({
+            transform: 'scale(' + scale + ')',
+        });
+    }
+
+    $(window).on('resize', resizeGame);
+    resizeGame();
 };
 
 WordSearchGame.prototype.renderStaticGrid = function () {
@@ -142,7 +167,7 @@ WordSearchGame.prototype.getCellElement = function (row, col) {
     return this.$el.find('.js-grid-body tr').eq(row).find('td').eq(col);
 };
 
-// 공통 타원 드로잉 메소드 (이제 .table-relative-box가 offsetParent가 되므로 완벽히 1:1 매칭됨)
+// 공통 타원 드로잉 메소드
 WordSearchGame.prototype.drawBaseEllipse = function (word, targetContainer, styleAttrs) {
     var $targetLayer = this.$el.find('.js-svg-overlay').find(targetContainer);
 
@@ -188,25 +213,25 @@ WordSearchGame.prototype.drawBaseEllipse = function (word, targetContainer, styl
     $targetLayer.append(ellipse);
 };
 
-// 정답을 찾았을 때 교재 스타일의 핑크 실선 타원 그리기
+// 정답 타원 스타일
 WordSearchGame.prototype.drawEllipseForWord = function (word) {
     var successStyles = {
         stroke: '#ff007f',
-        'stroke-width': '4',
+        'stroke-width': '6',
         fill: 'rgba(255, 0, 127, 0.08)',
     };
     this.drawBaseEllipse(word, '.js-found-group', successStyles);
 };
 
-// 콘솔 전용 테스트 모드 정답 힌트 (연한 푸른색 점선 타원으로 표시)
+// 콘솔용 테스트 모드
 WordSearchGame.prototype.showTestHints = function () {
     var self = this;
     this.$el.find('.js-hint-group').empty();
 
     var hintStyles = {
         stroke: '#3182ce',
-        'stroke-width': '3',
-        'stroke-dasharray': '6,4',
+        'stroke-width': '4',
+        'stroke-dasharray': '8,5',
         fill: 'none',
     };
 
@@ -221,7 +246,6 @@ WordSearchGame.prototype.clearTestHints = function () {
     this.$el.find('.js-hint-group').empty();
 };
 
-// 콘솔 호출 인터페이스용 토글 함수
 WordSearchGame.prototype.toggleTestMode = function () {
     this.isTestMode = !this.isTestMode;
     if (this.isTestMode) {
@@ -233,7 +257,7 @@ WordSearchGame.prototype.toggleTestMode = function () {
     }
 };
 
-// 사운드 관련 Web Audio API
+// 오디오 재생 효과음 (성공)
 WordSearchGame.prototype.playSuccessSound = function () {
     try {
         var AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -254,6 +278,7 @@ WordSearchGame.prototype.playSuccessSound = function () {
     } catch (e) {}
 };
 
+// 오디오 재생 효과음 (실패)
 WordSearchGame.prototype.playFailureSound = function () {
     try {
         var AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -274,9 +299,7 @@ WordSearchGame.prototype.playFailureSound = function () {
     } catch (e) {}
 };
 
-// ==========================================
-// 교재와 동일한 8x8 고정 단어판 데이터 구성
-// ==========================================
+// 고정 데이터셋
 var globalGameConfig = {
     gridSize: { rows: 8, cols: 8 },
     gridLetters: [

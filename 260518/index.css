@@ -3,26 +3,34 @@
     margin: 0;
     padding: 0;
 }
+/* 화면 스크롤이 생기지 않도록 차단하고 검은색/어두운 배경으로 여백 처리 */
 body {
     font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
-    background-color: #eef2f5;
+    background-color: #1e293b;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    padding: 20px;
+    width: 100vw;
+    overflow: hidden;
+    position: relative;
 }
 
-/* 메인 전체 외곽 컨테이너 */
+/* [핵심 변경] 1920x1020 고정 크기 컨테이너 */
 .main-wrapper {
-    width: 1000px;
+    width: 1920px;
+    height: 1020px;
     background: #ffffff;
-    border-radius: 32px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.05);
-    padding: 35px 40px;
+    border-radius: 40px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.15);
+    padding: 60px 80px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 40px;
+
+    /* transform scale 기준점을 정중앙으로 설정 */
+    transform-origin: center center;
+    flex-shrink: 0;
 }
 
 /* 상단 타이틀 영역 스타일 */
@@ -30,52 +38,52 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #e2e8f0;
-    padding-bottom: 15px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 25px;
 }
 .header-title-box {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 20px;
 }
 .badge-blue {
     background-color: #3b82f6;
     color: #ffffff;
     font-weight: bold;
-    font-size: 14px;
-    padding: 6px 16px;
-    border-radius: 20px;
+    font-size: 22px;
+    padding: 10px 28px;
+    border-radius: 30px;
 }
 .main-title {
-    font-size: 24px;
+    font-size: 38px;
     font-weight: 800;
     color: #1e293b;
 }
 .instruction-text {
-    font-size: 15px;
+    font-size: 24px;
     color: #ef4444;
     font-weight: 600;
 }
 
 /* 가이드 지문 영역 */
 .guide-intro {
-    font-size: 18px;
+    font-size: 26px;
     color: #334155;
     font-weight: bold;
     line-height: 1.5;
-    margin-bottom: 5px;
 }
 
 /* 콘텐츠 배치 영역 (좌/우) */
 .game-content {
     display: flex;
-    gap: 40px;
-    align-items: flex-start;
+    gap: 80px;
+    align-items: center;
+    flex: 1;
 }
 
 /* 좌측 영역: 단어 판 */
 .left-panel {
-    flex: 1.1;
+    flex: 1.2;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -84,41 +92,41 @@ body {
 /* 주황색 테두리 역할만 수행하는 배경 박스 */
 .grid-wrapper {
     background-color: #f3cda2;
-    padding: 8px;
-    border-radius: 12px;
+    padding: 12px;
+    border-radius: 20px;
     display: inline-block;
 }
 
-/* [핵심 수정] 테이블과 SVG를 1:1 크기로 묶어주는 기준점 박스 */
+/* 테이블과 SVG를 1:1 크기로 묶어주는 기준점 박스 */
 .table-relative-box {
     position: relative;
     display: block;
 }
 
-/* 단어 판 테이블 스타일 */
+/* 단어 판 테이블 스타일 - 1920 해상도에 맞춰 크기 확대 */
 .word-table {
     border-collapse: collapse;
     user-select: none;
     background-color: #ffffff;
 }
 .word-table td {
-    width: 52px;
-    height: 52px;
-    border: 2px solid #f3cda2;
+    width: 80px;
+    height: 80px;
+    border: 3px solid #f3cda2;
     text-align: center;
-    font-size: 20px;
+    font-size: 32px;
     font-weight: bold;
     color: #2d3748;
     cursor: pointer;
     transition: background-color 0.2s;
 }
-/* 글자가 선택되어 켜졌을 때 스타일 (임시 피드백) */
+/* 글자가 선택되어 켜졌을 때 스타일 */
 .word-table td.is-lit {
     background-color: #fff1f2;
     color: #f43f5e;
 }
 
-/* [핵심 수정] 이제 테이블 박스 크기와 정확히 일치하게 오버레이됨 */
+/* 테이블 박스 크기와 정확히 일치하게 오버레이됨 */
 .svg-overlay {
     position: absolute;
     top: 0;
@@ -135,16 +143,18 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 40px;
+    height: 100%;
+    justify-content: center;
 }
 
 /* 우측 중앙: 교재 스타일의 파스텔 블루 문제 상자 */
 .question-box {
     background-color: #eaf4f7;
-    border-radius: 16px;
-    padding: 30px;
+    border-radius: 24px;
+    padding: 50px;
     position: relative;
-    min-height: 220px;
+    min-height: 380px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -152,23 +162,22 @@ body {
 /* 문제 번호 배지 */
 .question-number {
     position: absolute;
-    top: -15px;
-    left: 20px;
+    top: -24px;
+    left: 40px;
     background-color: #87b9c7;
     color: #ffffff;
-    font-size: 18px;
+    font-size: 26px;
     font-weight: bold;
-    padding: 4px 18px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    padding: 8px 32px;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
 }
 .question-text {
-    font-size: 20px;
+    font-size: 32px;
     color: #2d3748;
     font-weight: bold;
-    line-height: 1.7;
+    line-height: 1.8;
     word-break: keep-all;
-    margin-top: 10px;
 }
 
 /* 우측 하단: 제어 상자 */
@@ -178,21 +187,21 @@ body {
 }
 /* 다시하기 하늘색 알약 버튼 */
 .reset-btn {
-    padding: 12px 32px;
-    font-size: 16px;
+    padding: 18px 48px;
+    font-size: 24px;
     font-weight: bold;
     color: #ffffff;
     background-color: #52bccc;
     border: none;
     border-radius: 50px;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(82, 188, 204, 0.3);
+    box-shadow: 0 6px 18px rgba(82, 188, 204, 0.3);
     transition: all 0.2s;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
 }
 .reset-btn:hover {
     background-color: #43aab9;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 }
