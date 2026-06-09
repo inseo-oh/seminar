@@ -4,392 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>인터랙티브 마인드맵</title>
-  <style>
-    :root {
-      --bg: #f4f7fb;
-      --ink: #172033;
-      --muted: #687386;
-      --line: #b9c6d6;
-      --blue: #2f6fed;
-      --green: #168f78;
-      --rose: #d64c74;
-      --gold: #c98710;
-      --panel: rgba(255, 255, 255, 0.92);
-      --shadow: 0 18px 50px rgba(35, 52, 82, 0.16);
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
-      font-family: "Pretendard", "Segoe UI", "Malgun Gothic", sans-serif;
-      color: var(--ink);
-      background:
-        radial-gradient(circle at 20% 18%, rgba(47, 111, 237, 0.16), transparent 30%),
-        radial-gradient(circle at 80% 74%, rgba(22, 143, 120, 0.13), transparent 28%),
-        linear-gradient(135deg, #fbfcff 0%, var(--bg) 100%);
-    }
-
-    button {
-      font: inherit;
-    }
-
-    #viewport {
-      position: fixed;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      background-image:
-        linear-gradient(rgba(23, 32, 51, 0.045) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(23, 32, 51, 0.045) 1px, transparent 1px);
-      background-size: 44px 44px;
-    }
-
-    #stage {
-      width: 1920px;
-      height: 1020px;
-      position: relative;
-      transform-origin: center center;
-      overflow: hidden;
-    }
-
-    .mindmap {
-      position: absolute;
-      inset: 56px 72px;
-    }
-
-    .center-topic {
-      position: absolute;
-      left: 50%;
-      top: 72px;
-      width: 520px;
-      min-height: 146px;
-      transform: translateX(-50%);
-      display: grid;
-      place-items: center;
-      padding: 28px 42px 42px;
-      text-align: center;
-      background: #ffffff;
-      border: 2px solid rgba(47, 111, 237, 0.2);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-    }
-
-    .center-topic h1 {
-      margin: 0;
-      font-size: 46px;
-      line-height: 1.18;
-      letter-spacing: 0;
-    }
-
-    .toggle {
-      width: 42px;
-      height: 42px;
-      border: 0;
-      border-radius: 999px;
-      display: inline-grid;
-      place-items: center;
-      color: #fff;
-      background: var(--blue);
-      box-shadow: 0 8px 18px rgba(47, 111, 237, 0.32);
-      cursor: pointer;
-      transition: transform 150ms ease, background 150ms ease, box-shadow 150ms ease;
-    }
-
-    .toggle:hover,
-    .question:hover,
-    .mini-question:hover {
-      transform: translateY(-1px);
-    }
-
-    .center-topic .toggle {
-      position: absolute;
-      left: 50%;
-      bottom: -21px;
-      transform: translateX(-50%);
-    }
-
-    .center-topic .toggle:hover {
-      transform: translateX(-50%) translateY(-1px);
-    }
-
-    .toggle[aria-expanded="true"] {
-      background: #172033;
-      box-shadow: 0 8px 18px rgba(23, 32, 51, 0.24);
-    }
-
-    .icon {
-      position: relative;
-      width: 18px;
-      height: 18px;
-    }
-
-    .icon::before,
-    .icon::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 18px;
-      height: 3px;
-      border-radius: 999px;
-      background: currentColor;
-      transform: translate(-50%, -50%);
-    }
-
-    .icon::after {
-      transform: translate(-50%, -50%) rotate(90deg);
-      transition: opacity 150ms ease;
-    }
-
-    [aria-expanded="true"] .icon::after {
-      opacity: 0;
-    }
-
-    .branch-layer {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 180ms ease;
-    }
-
-    .branch-layer.is-visible {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .connector {
-      position: absolute;
-      height: 2px;
-      background: var(--line);
-      transform-origin: left center;
-      opacity: 0.85;
-    }
-
-    .connector::after {
-      content: "";
-      position: absolute;
-      right: -5px;
-      top: -4px;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--line);
-    }
-
-    .line-a {
-      left: 630px;
-      top: 305px;
-      width: 380px;
-      transform: rotate(25deg);
-    }
-
-    .line-b {
-      left: 965px;
-      top: 300px;
-      width: 365px;
-      transform: rotate(155deg);
-    }
-
-    .line-c {
-      left: 832px;
-      top: 250px;
-      width: 350px;
-      transform: rotate(90deg);
-    }
-
-    .topic {
-      position: absolute;
-      width: 360px;
-      min-height: 122px;
-      padding: 24px 26px 38px;
-      background: var(--panel);
-      border: 1px solid rgba(104, 115, 134, 0.22);
-      border-radius: 8px;
-      box-shadow: 0 12px 34px rgba(35, 52, 82, 0.12);
-      backdrop-filter: blur(10px);
-    }
-
-    .topic[data-topic="thinking"] {
-      left: 150px;
-      top: 360px;
-      border-top: 5px solid var(--blue);
-    }
-
-    .topic[data-topic="learning"] {
-      right: 150px;
-      top: 360px;
-      border-top: 5px solid var(--green);
-    }
-
-    .topic[data-topic="practice"] {
-      left: 50%;
-      top: 565px;
-      transform: translateX(-50%);
-      border-top: 5px solid var(--rose);
-    }
-
-    .topic h2 {
-      margin: 0 0 8px;
-      font-size: 30px;
-      line-height: 1.2;
-      letter-spacing: 0;
-    }
-
-    .topic p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 18px;
-      line-height: 1.45;
-    }
-
-    .topic .toggle {
-      position: absolute;
-      left: 50%;
-      bottom: -20px;
-      transform: translateX(-50%);
-    }
-
-    .topic .toggle:hover {
-      transform: translateX(-50%) translateY(-1px);
-    }
-
-    .cards-layer {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 180ms ease;
-    }
-
-    .cards-layer.is-visible {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .concept-card {
-      position: absolute;
-      width: 360px;
-      min-height: 178px;
-      padding: 22px 24px;
-      background: #ffffff;
-      border: 1px solid rgba(104, 115, 134, 0.24);
-      border-radius: 8px;
-      box-shadow: 0 14px 32px rgba(35, 52, 82, 0.12);
-      overflow: hidden;
-    }
-
-    .concept-card h3 {
-      margin: 0 0 10px;
-      font-size: 24px;
-      line-height: 1.25;
-      letter-spacing: 0;
-    }
-
-    .concept-card p {
-      margin: 0;
-      font-size: 18px;
-      line-height: 1.55;
-      color: #39445a;
-    }
-
-    .concept-card .content {
-      opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 180ms ease, transform 180ms ease;
-    }
-
-    .concept-card.is-revealed .content {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .cover {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      background:
-        linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(246, 249, 253, 0.94)),
-        repeating-linear-gradient(45deg, rgba(47, 111, 237, 0.1) 0 10px, transparent 10px 20px);
-      transition: opacity 180ms ease, visibility 180ms ease;
-    }
-
-    .concept-card.is-revealed .cover {
-      visibility: hidden;
-      opacity: 0;
-    }
-
-    .question,
-    .mini-question {
-      border: 0;
-      border-radius: 999px;
-      display: inline-grid;
-      place-items: center;
-      color: #fff;
-      background: var(--gold);
-      cursor: pointer;
-      box-shadow: 0 8px 18px rgba(201, 135, 16, 0.26);
-      transition: transform 150ms ease, background 150ms ease;
-      vertical-align: middle;
-    }
-
-    .question {
-      width: 64px;
-      height: 64px;
-      font-size: 34px;
-      font-weight: 800;
-    }
-
-    .mini-question {
-      width: 25px;
-      height: 25px;
-      margin: 0 3px;
-      font-size: 15px;
-      font-weight: 800;
-    }
-
-    .mini-answer {
-      display: none;
-      padding: 1px 7px 2px;
-      border-radius: 999px;
-      color: #0f513f;
-      background: #d8f4ea;
-      white-space: nowrap;
-    }
-
-    .mini-answer.is-visible {
-      display: inline;
-    }
-
-    .card-t1-a { left: 65px; top: 520px; }
-    .card-t1-b { left: 450px; top: 520px; }
-    .card-t2-a { right: 450px; top: 520px; }
-    .card-t2-b { right: 65px; top: 520px; }
-    .card-t3-a { left: 578px; top: 775px; }
-    .card-t3-b { right: 578px; top: 775px; }
-
-    .legend {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      width: 360px;
-      padding: 16px 20px;
-      color: #576276;
-      background: rgba(255, 255, 255, 0.68);
-      border: 1px solid rgba(104, 115, 134, 0.18);
-      border-radius: 8px;
-      font-size: 17px;
-      line-height: 1.45;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <main id="viewport" aria-label="인터랙티브 마인드맵">
@@ -433,123 +48,78 @@
         </div>
 
         <div id="thinking-cards" class="cards-layer" aria-hidden="true">
+          <span class="card-link card-link-t1-a" aria-hidden="true"></span>
+          <span class="card-link card-link-t1-b" aria-hidden="true"></span>
+
           <article class="concept-card card-t1-a">
             <div class="content">
               <h3>핵심 질문</h3>
-              <p>좋은 개념 이해는 “무엇인가?”에서 끝나지 않고
-                <button class="mini-question" type="button" aria-label="가려진 설명 보기">?</button><span class="mini-answer">왜 필요한가</span>,
-                <button class="mini-question" type="button" aria-label="가려진 설명 보기">?</button><span class="mini-answer">어디까지 적용되는가</span>를 함께 묻습니다.
-              </p>
+              <p>좋은 개념 이해는 “무엇인가?”에서 끝나지 않고 <span class="masked-answer">왜 필요한가</span>, <span class="masked-answer">어디까지 적용되는가</span>를 함께 묻습니다.</p>
             </div>
+            <button class="mini-question" style="--q-left: 151px; --q-top: 88px;" type="button" aria-label="왜 필요한가 보기">?</button>
+            <button class="mini-question" style="--q-left: 237px; --q-top: 88px;" type="button" aria-label="어디까지 적용되는가 보기">?</button>
             <div class="cover"><button class="question" type="button" aria-label="카드 내용 보기">?</button></div>
           </article>
 
           <article class="concept-card card-t1-b">
             <div class="content">
               <h3>비교 기준</h3>
-              <p>비슷한 개념을 나란히 놓고 공통점, 차이점,
-                <button class="mini-question" type="button" aria-label="가려진 설명 보기">?</button><span class="mini-answer">경계 조건</span>을 찾으면 기억이 더 단단해집니다.
-              </p>
+              <p>비슷한 개념을 나란히 놓고 공통점, 차이점, <span class="masked-answer">경계 조건</span>을 찾으면 기억이 더 단단해집니다.</p>
             </div>
+            <button class="mini-question" style="--q-left: 199px; --q-top: 88px;" type="button" aria-label="경계 조건 보기">?</button>
             <div class="cover"><button class="question" type="button" aria-label="카드 내용 보기">?</button></div>
           </article>
         </div>
 
         <div id="learning-cards" class="cards-layer" aria-hidden="true">
+          <span class="card-link card-link-t2-a" aria-hidden="true"></span>
+          <span class="card-link card-link-t2-b" aria-hidden="true"></span>
+
           <article class="concept-card card-t2-a">
             <div class="content">
               <h3>예시 먼저 보기</h3>
-              <p>추상적인 정의 전에 구체적 사례를 보면 뇌가
-                <button class="mini-question" type="button" aria-label="가려진 설명 보기">?</button><span class="mini-answer">패턴</span>을 먼저 잡고 정의를 받아들입니다.
-              </p>
+              <p>추상적인 정의 전에 구체적 사례를 보면 뇌가 <span class="masked-answer">패턴</span>을 먼저 잡고 정의를 받아들입니다.</p>
             </div>
+            <button class="mini-question" style="--q-left: 232px; --q-top: 88px;" type="button" aria-label="패턴 보기">?</button>
             <div class="cover"><button class="question" type="button" aria-label="카드 내용 보기">?</button></div>
           </article>
 
           <article class="concept-card card-t2-b">
             <div class="content">
               <h3>간격 반복</h3>
-              <p>한 번에 오래 보는 것보다 짧게 다시 보는 편이
-                <button class="mini-question" type="button" aria-label="가려진 설명 보기">?</button><span class="mini-answer">인출 연습</span>을 늘려 오래 갑니다.
-              </p>
+              <p>한 번에 오래 보는 것보다 짧게 다시 보는 편이 <span class="masked-answer">인출 연습</span>을 늘려 오래 갑니다.</p>
             </div>
+            <button class="mini-question" style="--q-left: 227px; --q-top: 88px;" type="button" aria-label="인출 연습 보기">?</button>
             <div class="cover"><button class="question" type="button" aria-label="카드 내용 보기">?</button></div>
           </article>
         </div>
 
         <div id="practice-cards" class="cards-layer" aria-hidden="true">
+          <span class="card-link card-link-t3-a" aria-hidden="true"></span>
+          <span class="card-link card-link-t3-b" aria-hidden="true"></span>
+
           <article class="concept-card card-t3-a">
             <div class="content">
               <h3>자기 설명</h3>
-              <p>배운 내용을 다른 사람에게 말하듯 풀어 쓰면 빈틈,
-                <button class="mini-question" type="button" aria-label="가려진 설명 보기">?</button><span class="mini-answer">가정</span>, 헷갈리는 용어가 드러납니다.
-              </p>
+              <p>배운 내용을 다른 사람에게 말하듯 풀어 쓰면 빈틈, <span class="masked-answer">가정</span>, 헷갈리는 용어가 드러납니다.</p>
             </div>
+            <button class="mini-question" style="--q-left: 249px; --q-top: 88px;" type="button" aria-label="가정 보기">?</button>
             <div class="cover"><button class="question" type="button" aria-label="카드 내용 보기">?</button></div>
           </article>
 
           <article class="concept-card card-t3-b">
             <div class="content">
               <h3>적용 문제</h3>
-              <p>새로운 상황에 개념을 적용해 보면 단순 암기인지
-                <button class="mini-question" type="button" aria-label="가려진 설명 보기">?</button><span class="mini-answer">전이 가능한 이해</span>인지 구분됩니다.
-              </p>
+              <p>새로운 상황에 개념을 적용해 보면 단순 암기인지 <span class="masked-answer">전이 가능한 이해</span>인지 구분됩니다.</p>
             </div>
+            <button class="mini-question" style="--q-left: 216px; --q-top: 88px;" type="button" aria-label="전이 가능한 이해 보기">?</button>
             <div class="cover"><button class="question" type="button" aria-label="카드 내용 보기">?</button></div>
           </article>
         </div>
-
-        <aside class="legend">중심 주제의 버튼을 누르면 소주제가, 각 소주제의 버튼을 누르면 카드가 나타납니다. 카드와 문장 속 물음표를 눌러 숨은 내용을 열 수 있습니다.</aside>
       </div>
     </section>
   </main>
 
-  <script>
-    const BASE_WIDTH = 1920;
-    const BASE_HEIGHT = 1020;
-    const stage = document.querySelector("#stage");
-
-    function scaleStage() {
-      const scale = Math.min(window.innerWidth / BASE_WIDTH, window.innerHeight / BASE_HEIGHT);
-      stage.style.transform = `scale(${scale})`;
-    }
-
-    function setLayerVisible(layer, visible) {
-      layer.classList.toggle("is-visible", visible);
-      layer.setAttribute("aria-hidden", String(!visible));
-    }
-
-    function setToggleState(button, expanded) {
-      button.setAttribute("aria-expanded", String(expanded));
-      const label = button.getAttribute("aria-label") || "";
-      button.setAttribute("aria-label", label.replace(expanded ? "펼치기" : "접기", expanded ? "접기" : "펼치기"));
-    }
-
-    window.addEventListener("resize", scaleStage);
-    scaleStage();
-
-    document.querySelectorAll(".toggle").forEach((button) => {
-      button.addEventListener("click", () => {
-        const target = document.getElementById(button.getAttribute("aria-controls"));
-        const expanded = button.getAttribute("aria-expanded") === "true";
-        setToggleState(button, !expanded);
-        setLayerVisible(target, !expanded);
-      });
-    });
-
-    document.querySelectorAll(".question").forEach((button) => {
-      button.addEventListener("click", () => {
-        button.closest(".concept-card").classList.add("is-revealed");
-      });
-    });
-
-    document.querySelectorAll(".mini-question").forEach((button) => {
-      button.addEventListener("click", () => {
-        const answer = button.nextElementSibling;
-        answer.classList.add("is-visible");
-        button.remove();
-      });
-    });
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
