@@ -1,125 +1,314 @@
 <!doctype html>
 <html lang="ko">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>인터랙티브 마인드맵</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <main id="viewport" aria-label="인터랙티브 마인드맵">
-    <section id="stage">
-      <div class="mindmap">
-        <article class="center-topic">
-          <h1>개념을 깊게 이해하는 방법</h1>
-          <button class="toggle" type="button" aria-expanded="false" aria-controls="topics" aria-label="소주제 펼치기">
-            <span class="icon" aria-hidden="true"></span>
-          </button>
-        </article>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>한눈에 보는 수학 맵! - 각기둥·각뿔 편</title>
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body>
+        <main id="viewport" aria-label="입체도형 개념 맵 인터랙티브">
+            <section id="stage">
+                <div class="mindmap">
+                    <article class="center-topic">
+                        <h1>입체도형: 각기둥과 각뿔</h1>
+                        <button
+                            class="toggle"
+                            type="button"
+                            aria-expanded="false"
+                            aria-controls="topics"
+                            aria-label="세부 주제 열기"
+                        >
+                            <span class="icon" aria-hidden="true"></span>
+                        </button>
+                    </article>
 
-        <div id="topics" class="branch-layer" aria-hidden="true">
-          <span class="connector line-a" aria-hidden="true"></span>
-          <span class="connector line-b" aria-hidden="true"></span>
-          <span class="connector line-c" aria-hidden="true"></span>
+                    <div id="topics" class="branch-layer" aria-hidden="true">
+                        <span class="connector line-a" aria-hidden="true"></span>
+                        <span class="connector line-b" aria-hidden="true"></span>
 
-          <article class="topic" data-topic="thinking">
-            <h2>생각의 구조</h2>
-            <p>개념을 단어가 아니라 관계와 기준으로 묶어 봅니다.</p>
-            <button class="toggle" type="button" aria-expanded="false" aria-controls="thinking-cards" aria-label="생각의 구조 박스 펼치기">
-              <span class="icon" aria-hidden="true"></span>
-            </button>
-          </article>
+                        <article class="topic" data-topic="prism">
+                            <h2>기둥 모양 도형</h2>
+                            <button
+                                class="toggle"
+                                type="button"
+                                aria-expanded="false"
+                                aria-controls="prism-cards"
+                                aria-label="각기둥 개념 펼치기"
+                            >
+                                <span class="icon" aria-hidden="true"></span>
+                            </button>
+                        </article>
 
-          <article class="topic" data-topic="learning">
-            <h2>학습의 흐름</h2>
-            <p>처음 만난 정보가 오래 남도록 순서를 설계합니다.</p>
-            <button class="toggle" type="button" aria-expanded="false" aria-controls="learning-cards" aria-label="학습의 흐름 박스 펼치기">
-              <span class="icon" aria-hidden="true"></span>
-            </button>
-          </article>
+                        <article class="topic" data-topic="pyramid">
+                            <h2>뿔 모양 도형</h2>
+                            <button
+                                class="toggle"
+                                type="button"
+                                aria-expanded="false"
+                                aria-controls="pyramid-cards"
+                                aria-label="각뿔 개념 펼치기"
+                            >
+                                <span class="icon" aria-hidden="true"></span>
+                            </button>
+                        </article>
+                    </div>
 
-          <article class="topic" data-topic="practice">
-            <h2>실행과 점검</h2>
-            <p>이해가 실제 판단과 행동으로 이어지는지 확인합니다.</p>
-            <button class="toggle" type="button" aria-expanded="false" aria-controls="practice-cards" aria-label="실행과 점검 박스 펼치기">
-              <span class="icon" aria-hidden="true"></span>
-            </button>
-          </article>
-        </div>
+                    <div id="prism-cards" class="cards-layer" aria-hidden="true">
+                        <span class="card-link link-prism-a" aria-hidden="true"></span>
+                        <span class="card-link link-prism-b" aria-hidden="true"></span>
+                        <span class="card-link link-prism-c" aria-hidden="true"></span>
 
-        <div id="thinking-cards" class="cards-layer" aria-hidden="true">
-          <span class="card-link card-link-t1-a" aria-hidden="true"></span>
-          <span class="card-link card-link-t1-b" aria-hidden="true"></span>
+                        <article class="concept-card prism-def">
+                            <div class="content">
+                                <h3>각기둥이란?</h3>
+                                <p>
+                                    위아래의 두 면이 합동이면서 평행한 다각형이고, 옆을 둘러싼 면들이 전부
+                                    직사각형으로 이루어진 입체도형
+                                </p>
+                            </div>
+                            <div class="cover">
+                                <button class="question" type="button" aria-label="각기둥 뜻 확인하기">
+                                    ?
+                                </button>
+                            </div>
+                        </article>
 
-          <article class="concept-card card-t1-a">
-            <div class="content">
-              <h3>핵심 질문</h3>
-              <p>좋은 개념 이해는 “무엇인가?”에서 끝나지 않고 <span class="masked-answer">왜 필요한가</span>, <span class="masked-answer">어디까지 적용되는가</span>를 함께 묻습니다.</p>
-            </div>
-            <button class="mini-question" style="--q-left: 151px; --q-top: 88px;" type="button" aria-label="왜 필요한가 보기">?</button>
-            <button class="mini-question" style="--q-left: 237px; --q-top: 88px;" type="button" aria-label="어디까지 적용되는가 보기">?</button>
-            <div class="cover"><button class="question" type="button" aria-label="카드 내용 보기">?</button></div>
-          </article>
+                        <article class="concept-card prism-components">
+                            <div class="content">
+                                <h3>각기둥을 이루는 요소</h3>
+                                <div class="diagram-zone">
+                                    <img src="prism_diagram.png" alt="각기둥의 구성 요소 다이어그램" />
 
-          <article class="concept-card card-t1-b">
-            <div class="content">
-              <h3>비교 기준</h3>
-              <p>비슷한 개념을 나란히 놓고 공통점, 차이점, <span class="masked-answer">경계 조건</span>을 찾으면 기억이 더 단단해집니다.</p>
-            </div>
-            <button class="mini-question" style="--q-left: 199px; --q-top: 88px;" type="button" aria-label="경계 조건 보기">?</button>
-            <div class="cover"><button class="question" type="button" aria-label="카드 내용 보기">?</button></div>
-          </article>
-        </div>
+                                    <div
+                                        class="quiz-balloon b-prism-1"
+                                        style="--b-left: 200px; --b-top: 15px"
+                                    >
+                                        <span class="answer-text">마주 보며 평행하고 합동인 두 개의 면</span>
+                                        <button
+                                            class="mini-question pq-prism"
+                                            type="button"
+                                            aria-label="단서 보기"
+                                        >
+                                            ?
+                                        </button>
+                                    </div>
+                                    <div
+                                        class="quiz-balloon b-prism-2"
+                                        style="--b-left: 220px; --b-top: 110px"
+                                    >
+                                        <span class="answer-text">두 개의 밑면 사이를 수직으로 잰 거리</span>
+                                        <button
+                                            class="mini-question pq-prism"
+                                            type="button"
+                                            aria-label="단서 보기"
+                                        >
+                                            ?
+                                        </button>
+                                    </div>
+                                    <div
+                                        class="quiz-balloon b-prism-3"
+                                        style="--b-left: 180px; --b-top: 210px"
+                                    >
+                                        <span class="answer-text">선분과 선분이 만나서 생기는 점</span>
+                                        <button
+                                            class="mini-question pq-prism"
+                                            type="button"
+                                            aria-label="단서 보기"
+                                        >
+                                            ?
+                                        </button>
+                                    </div>
+                                    <div
+                                        class="quiz-balloon b-prism-4"
+                                        style="--b-left: 10px; --b-top: 100px"
+                                    >
+                                        <span class="answer-text">밑면이 아닌 옆을 둘러싼 면</span>
+                                        <button
+                                            class="mini-question pq-prism"
+                                            type="button"
+                                            aria-label="단서 보기"
+                                        >
+                                            ?
+                                        </button>
+                                    </div>
+                                    <div
+                                        class="quiz-balloon b-prism-5"
+                                        style="--b-left: -10px; --b-top: 200px"
+                                    >
+                                        <span class="answer-text">두 면이 만나서 생기는 곧은 선</span>
+                                        <button
+                                            class="mini-question pq-prism"
+                                            type="button"
+                                            aria-label="단서 보기"
+                                        >
+                                            ?
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="cover">
+                                <button class="question" type="button" aria-label="각기둥 구성 요소 확인하기">
+                                    ?
+                                </button>
+                            </div>
+                        </article>
 
-        <div id="learning-cards" class="cards-layer" aria-hidden="true">
-          <span class="card-link card-link-t2-a" aria-hidden="true"></span>
-          <span class="card-link card-link-t2-b" aria-hidden="true"></span>
+                        <article class="concept-card prism-names-dev">
+                            <div class="content">
+                                <div class="sub-section">
+                                    <h3>이름 붙이는 방법</h3>
+                                    <p>
+                                        바닥에 놓이는 밑면의 형태를 보고 정해요. (예: 삼각기둥, 사각기둥 등)
+                                    </p>
+                                </div>
+                                <div class="sub-section">
+                                    <h3>펼쳐놓은 그림</h3>
+                                    <p>
+                                        모서리를 어떻게 가위로 자르는지에 따라 서로 다른 형태들이 그려집니다.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="cover">
+                                <button class="question" type="button" aria-label="명칭 및 전개도 확인하기">
+                                    ?
+                                </button>
+                            </div>
+                        </article>
+                    </div>
 
-          <article class="concept-card card-t2-a">
-            <div class="content">
-              <h3>예시 먼저 보기</h3>
-              <p>추상적인 정의 전에 구체적 사례를 보면 뇌가 <span class="masked-answer">패턴</span>을 먼저 잡고 정의를 받아들입니다.</p>
-            </div>
-            <button class="mini-question" style="--q-left: 232px; --q-top: 88px;" type="button" aria-label="패턴 보기">?</button>
-            <div class="cover"><button class="question" type="button" aria-label="카드 내용 보기">?</button></div>
-          </article>
+                    <div id="pyramid-cards" class="cards-layer" aria-hidden="true">
+                        <span class="card-link link-pyramid-a" aria-hidden="true"></span>
+                        <span class="card-link link-pyramid-b" aria-hidden="true"></span>
+                        <span class="card-link link-pyramid-c" aria-hidden="true"></span>
 
-          <article class="concept-card card-t2-b">
-            <div class="content">
-              <h3>간격 반복</h3>
-              <p>한 번에 오래 보는 것보다 짧게 다시 보는 편이 <span class="masked-answer">인출 연습</span>을 늘려 오래 갑니다.</p>
-            </div>
-            <button class="mini-question" style="--q-left: 227px; --q-top: 88px;" type="button" aria-label="인출 연습 보기">?</button>
-            <div class="cover"><button class="question" type="button" aria-label="카드 내용 보기">?</button></div>
-          </article>
-        </div>
+                        <article class="concept-card pyramid-def">
+                            <div class="content">
+                                <h3>각뿔이란?</h3>
+                                <p>
+                                    바닥면은 다각형 모양이고, 옆면들은 모두 하나의 꼭짓점으로 모이는 삼각형
+                                    모양인 입체도형
+                                </p>
+                            </div>
+                            <div class="cover">
+                                <button class="question" type="button" aria-label="각뿔 뜻 확인하기">
+                                    ?
+                                </button>
+                            </div>
+                        </article>
 
-        <div id="practice-cards" class="cards-layer" aria-hidden="true">
-          <span class="card-link card-link-t3-a" aria-hidden="true"></span>
-          <span class="card-link card-link-t3-b" aria-hidden="true"></span>
+                        <article class="concept-card pyramid-components">
+                            <div class="content">
+                                <h3>각뿔을 이루는 요소</h3>
+                                <div class="diagram-zone">
+                                    <img src="pyramid_diagram.png" alt="각뿔의 구성 요소 다이어그램" />
 
-          <article class="concept-card card-t3-a">
-            <div class="content">
-              <h3>자기 설명</h3>
-              <p>배운 내용을 다른 사람에게 말하듯 풀어 쓰면 빈틈, <span class="masked-answer">가정</span>, 헷갈리는 용어가 드러납니다.</p>
-            </div>
-            <button class="mini-question" style="--q-left: 249px; --q-top: 88px;" type="button" aria-label="가정 보기">?</button>
-            <div class="cover"><button class="question" type="button" aria-label="카드 내용 보기">?</button></div>
-          </article>
+                                    <div
+                                        class="quiz-balloon b-pyramid-1"
+                                        style="--b-left: 190px; --b-top: 40px"
+                                    >
+                                        <span class="answer-text"
+                                            >삼각형인 옆면들이 위에서 한데 모이는 꼭짓점</span
+                                        >
+                                        <button
+                                            class="mini-question pq-pyramid"
+                                            type="button"
+                                            aria-label="단서 보기"
+                                        >
+                                            ?
+                                        </button>
+                                    </div>
+                                    <div
+                                        class="quiz-balloon b-pyramid-2"
+                                        style="--b-left: 210px; --b-top: 110px"
+                                    >
+                                        <span class="answer-text"
+                                            >가장 위의 꼭짓점부터 밑면까지 수직으로 내려온 거리</span
+                                        >
+                                        <button
+                                            class="mini-question pq-pyramid"
+                                            type="button"
+                                            aria-label="단서 보기"
+                                        >
+                                            ?
+                                        </button>
+                                    </div>
+                                    <div
+                                        class="quiz-balloon b-pyramid-3"
+                                        style="--b-left: 200px; --b-top: 190px"
+                                    >
+                                        <span class="answer-text">모서리끼리 부딪쳐서 만나는 뾰족한 점</span>
+                                        <button
+                                            class="mini-question pq-pyramid"
+                                            type="button"
+                                            aria-label="단서 보기"
+                                        >
+                                            ?
+                                        </button>
+                                    </div>
+                                    <div
+                                        class="quiz-balloon b-pyramid-4"
+                                        style="--b-left: 5px; --b-top: 60px"
+                                    >
+                                        <span class="answer-text">면과 면의 경계가 되는 선분</span>
+                                        <button
+                                            class="mini-question pq-pyramid"
+                                            type="button"
+                                            aria-label="단서 보기"
+                                        >
+                                            ?
+                                        </button>
+                                    </div>
+                                    <div
+                                        class="quiz-balloon b-pyramid-5"
+                                        style="--b-left: 10px; --b-top: 150px"
+                                    >
+                                        <span class="answer-text">밑면을 둘러싸고 있는 세모 모양의 면들</span>
+                                        <button
+                                            class="mini-question pq-pyramid"
+                                            type="button"
+                                            aria-label="단서 보기"
+                                        >
+                                            ?
+                                        </button>
+                                    </div>
+                                    <div
+                                        class="quiz-balloon b-pyramid-6"
+                                        style="--b-left: 40px; --b-top: 230px"
+                                    >
+                                        <span class="answer-text">도형의 기준이 되는 바닥의 면</span>
+                                        <button
+                                            class="mini-question pq-pyramid"
+                                            type="button"
+                                            aria-label="단서 보기"
+                                        >
+                                            ?
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="cover">
+                                <button class="question" type="button" aria-label="각뿔 구성 요소 확인하기">
+                                    ?
+                                </button>
+                            </div>
+                        </article>
 
-          <article class="concept-card card-t3-b">
-            <div class="content">
-              <h3>적용 문제</h3>
-              <p>새로운 상황에 개념을 적용해 보면 단순 암기인지 <span class="masked-answer">전이 가능한 이해</span>인지 구분됩니다.</p>
-            </div>
-            <button class="mini-question" style="--q-left: 216px; --q-top: 88px;" type="button" aria-label="전이 가능한 이해 보기">?</button>
-            <div class="cover"><button class="question" type="button" aria-label="카드 내용 보기">?</button></div>
-          </article>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <script src="script.js"></script>
-</body>
+                        <article class="concept-card pyramid-names">
+                            <div class="content">
+                                <h3>명칭을 정하는 법</h3>
+                                <p>바닥을 지탱하는 면의 각형에 따라 결정돼요. (예: 삼각뿔, 사각뿔, 오각뿔)</p>
+                            </div>
+                            <div class="cover">
+                                <button class="question" type="button" aria-label="각뿔 이름 확인하기">
+                                    ?
+                                </button>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <script src="script.js"></script>
+    </body>
 </html>
