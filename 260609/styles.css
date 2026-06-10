@@ -166,9 +166,20 @@ button {
   transition: opacity 180ms ease;
 }
 
-.branch-layer.is-visible,
+.branch-layer.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .cards-layer.is-visible {
   opacity: 1;
+  /* 레이어 자체는 마우스 이벤트를 통과시켜 뒤쪽 버튼이 눌리게 합니다 */
+  pointer-events: none; 
+}
+
+/* 카드 레이어 내부의 실제 클릭해야 하는 요소들만 다시 클릭이 작동하도록 설정 */
+.cards-layer.is-visible .concept-card,
+.cards-layer.is-visible .card-link {
   pointer-events: auto;
 }
 
