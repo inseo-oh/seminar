@@ -366,8 +366,9 @@ button {
 }
 
 .mini-question.is-hidden {
-  opacity: 0;
-  pointer-events: none;
+opacity: 0;
+  /* pointer-events: none; 을 제거하여 투명한 상태에서도 클릭할 수 있게 합니다. */
+  box-shadow: none; /* 투명할 때는 그림자도 안 보이게 처리 */
 }
 
 .card-t1-a { left: 65px; top: 520px; }

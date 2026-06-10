@@ -82,6 +82,6 @@ document.querySelectorAll(".question").forEach((button) => {
 
 document.querySelectorAll(".mini-question").forEach((button) => {
   button.addEventListener("click", () => {
-    button.classList.add("is-hidden");
+    button.classList.toggle("is-hidden");
   });
 });
