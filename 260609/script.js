@@ -94,21 +94,63 @@ document.querySelectorAll('.mini-question').forEach((button) => {
 
 // script.js 하단에 추가
 
-// 1. 전체 열기 기능
+// [수정] 1. 전체 열기 / 전체 닫기 토글 기능 (말풍선 퀴즈 연동)
 const btnAllOpen = document.querySelector('#btn-all-open');
 btnAllOpen.addEventListener('click', () => {
-    // 모든 토글 버튼 열기 상태로 변경
-    document.querySelectorAll('.toggle').forEach((button) => {
-        setToggleState(button, true);
-    });
-    // 모든 브랜치 및 카드 레이어 보여주기
-    document.querySelectorAll('.branch-layer, .cards-layer').forEach((layer) => {
-        setLayerVisible(layer, true);
-    });
-    // 모든 개념 카드 내용 공개
-    document.querySelectorAll('.concept-card').forEach((card) => {
-        card.classList.add('is-revealed');
-    });
+    // 현재 버튼이 '전체 열기' 상태인지 확인 (텍스트 기준)
+    const isOpening = btnAllOpen.textContent === '전체 열기';
+
+    if (isOpening) {
+        // --------------------------------------------------
+        // [전체 열기 로직]
+        // --------------------------------------------------
+        btnAllOpen.textContent = '전체 닫기';
+        btnAllOpen.style.background = '#1c2438'; // 닫기 상태일 때 버튼 색상 변경 (선택 사항)
+
+        // 1단계 & 2단계 모든 토글 버튼 활성화
+        document.querySelectorAll('.toggle').forEach((button) => {
+            setToggleState(button, true);
+        });
+
+        // 모든 브랜치 및 카드 레이어 표시
+        document.querySelectorAll('.branch-layer, .cards-layer').forEach((layer) => {
+            setLayerVisible(layer, true);
+        });
+
+        // 모든 개념 카드 내용 공개 (대형 물음표 숨기기)
+        document.querySelectorAll('.concept-card').forEach((card) => {
+            card.classList.add('is-revealed');
+        });
+
+        // ★ [추가] 모든 말풍선 퀴즈(quiz-balloon)의 미니 물음표 숨겨서 정답 공개
+        document.querySelectorAll('.mini-question').forEach((button) => {
+            button.classList.add('is-hidden');
+        });
+    } else {
+        // --------------------------------------------------
+        // [전체 닫기 로직]
+        // --------------------------------------------------
+        btnAllOpen.textContent = '전체 열기';
+        btnAllOpen.style.background = '#e6683b'; // 원래 주황색으로 복구
+
+        // 모든 토글 버튼 비활성화
+        document.querySelectorAll('.toggle').forEach((button) => {
+            setToggleState(button, false);
+        });
+
+        // 모든 레이어 숨기기
+        document.querySelectorAll('.branch-layer, .cards-layer').forEach((layer) => {
+            setLayerVisible(layer, false);
+        });
+
+        // 모든 개념 카드 및 미니 퀴즈 상태 초기화 (기존 resetCards 함수 활용 가능)
+        document.querySelectorAll('.concept-card').forEach((card) => {
+            card.classList.remove('is-revealed');
+        });
+        document.querySelectorAll('.mini-question').forEach((button) => {
+            button.classList.remove('is-hidden');
+        });
+    }
 });
 
 // 2. 배율(Zoom) 제어 기능 (기존 scaleStage 함수와 결합하기 위해 변수 도입)
