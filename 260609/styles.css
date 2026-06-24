@@ -516,3 +516,137 @@ button {
 #top-toolbar button:active {
     transform: scale(0.95);
 }
+
+/* ==================================================
+   ✏️ 그리기/지우개/포인터 모드 및 캔버스 스타일
+   ================================================== */
+
+/* 화면 전체를 덮는 드로잉 캔버스 */
+#drawing-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50; /* 마인드맵보단 위, 상단 툴바(#top-toolbar)보다는 아래 */
+    pointer-events: none; /* 기본 상태(포인터 모드)에서는 클릭이 관통되어 마인드맵 조작 가능 */
+}
+
+/* 그리기나 지우개 모드일 때는 캔버스가 마우스를 획득 */
+body.mode-draw #drawing-canvas,
+body.mode-erase #drawing-canvas {
+    pointer-events: auto;
+}
+
+body.mode-draw #drawing-canvas {
+    cursor: crosshair;
+} /* 그리기 십자선 커서 */
+body.mode-erase #drawing-canvas {
+    cursor: cell;
+} /* 지우개 커서 */
+
+/* 모드 버튼 컨테이너 (둥근 보드 형태) */
+.mode-controls {
+    display: flex;
+    gap: 6px;
+    background: #e2e8f0;
+    padding: 4px;
+    border-radius: 20px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* 모드 버튼 공통 스타일 (기본은 비활성화 = 회색조) */
+.btn-mode {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: #94a3b8; /* 비활성 회색 */
+    font-size: 16px;
+    display: grid;
+    place-items: center;
+    transition: all 0.2s ease;
+    filter: grayscale(40%);
+}
+
+/* 개별 활성화 컬러 매핑 (이미지 기반 옐로우/오렌지/핑크 톤) */
+#btn-mode-draw.is-active {
+    background: #facc15;
+    filter: grayscale(0%);
+    transform: scale(1.05);
+} /* 그리기: 노랑 */
+#btn-mode-erase.is-active {
+    background: #fb923c;
+    filter: grayscale(0%);
+    transform: scale(1.05);
+} /* 지우개: 주황 */
+#btn-mode-pointer.is-active {
+    background: #f472b6;
+    filter: grayscale(0%);
+    transform: scale(1.05);
+} /* 포인터: 분홍 */
+
+/* 상단 툴바 기본 배치 배치 고정 및 클리핑 정상화 */
+#top-toolbar {
+    position: fixed;
+    top: 15px;
+    left: 20px;
+    right: 20px;
+    height: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+}
+.control-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.btn-rect {
+    background: #e6683b;
+    color: white;
+    border: none;
+    border-radius: 18px;
+    padding: 8px 20px;
+    font-weight: bold;
+    font-size: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.btn-circle {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: #235cd6;
+    color: white;
+    display: grid;
+    place-items: center;
+    font-size: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 3px solid #4a90e2;
+    border-radius: 25px;
+    padding: 2px 5px;
+}
+.zoom-controls button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #4a90e2;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+}
+#zoom-indicator {
+    min-width: 70px;
+    text-align: center;
+    font-weight: bold;
+    color: #1c2438;
+}

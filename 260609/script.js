@@ -155,17 +155,61 @@ btnAllOpen.addEventListener('click', () => {
 });
 
 // 2. 배율(Zoom) 제어 기능 (기존 scaleStage 함수와 결합하기 위해 변수 도입)
-let currentZoom = 100; // 기본 100%
+let currentZoom = 100;
+let currentMode = 'pointer'; // 'draw', 'erase', 'pointer'
 const zoomIndicator = document.querySelector('#zoom-indicator');
 
-// 드래그 상태 관리를 위한 변수
+// 드래그 상태 관리
 let isDragging = false;
 let startX = 0,
     startY = 0;
 let panX = 0,
     panY = 0;
 
-// 화면 스케일 및 위치 업데이트 함수
+// 🎨 캔버스 및 필기 드로잉 환경 설정
+const canvas = document.getElementById('drawing-canvas');
+const ctx = canvas.getContext('2d');
+let isDrawing = false;
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// ==================================================
+// 🔄 모드 전환 스위칭 제어 로직
+// ==================================================
+function switchMode(mode) {
+    currentMode = mode;
+
+    // 1. 모든 모드 버튼 클래스 초기화
+    document.querySelectorAll('.btn-mode').forEach((btn) => btn.classList.remove('is-active'));
+    // 2. body에 걸려있던 커서 관련 모드 클래스 초기화
+    document.body.classList.remove('mode-draw', 'mode-erase', 'mode-pointer');
+
+    // 3. 선택한 모드 활성화 활성화
+    if (mode === 'draw') {
+        document.getElementById('btn-mode-draw').classList.add('is-active');
+        document.body.classList.add('mode-draw');
+    } else if (mode === 'erase') {
+        document.getElementById('btn-mode-erase').classList.add('is-active');
+        document.body.classList.add('mode-erase');
+    } else {
+        document.getElementById('btn-mode-pointer').classList.add('is-active');
+        document.body.classList.add('mode-pointer');
+    }
+}
+
+// 모드 버튼 이벤트 바인딩
+document.getElementById('btn-mode-draw').addEventListener('click', () => switchMode('draw'));
+document.getElementById('btn-mode-erase').addEventListener('click', () => switchMode('erase'));
+document.getElementById('btn-mode-pointer').addEventListener('click', () => switchMode('pointer'));
+
+// ==================================================
+// 📐 [수정] 화면 배율(Zoom) 및 드래그 제어 (모든 모드에서 버튼 작동 가능)
+// ==================================================
 function updateZoom() {
     zoomIndicator.textContent = `${currentZoom} %`;
 
@@ -173,27 +217,14 @@ function updateZoom() {
     const finalScale = baseScale * (currentZoom / 100);
     stage.style.setProperty('--stage-scale', finalScale);
 
-    // 100% 이하일 때는 드래그 위치를 강제로 초기화(중앙 고정)
     if (currentZoom <= 100) {
         panX = 0;
         panY = 0;
-        stage.style.cursor = 'default';
-    } else {
-        stage.style.cursor = 'grab';
     }
-
-    // transform에 scale과 함께 드래그 이동 거리(translate)를 적용
-    // (초기 중심점 이동인 translate(-50%, -50%)를 유지하면서 panX, panY 만큼 더 이동)
     stage.style.transform = `translate(calc(-50% + ${panX}px), calc(-50% + ${panY}px)) scale(${finalScale})`;
 }
 
-// 창 크기가 바뀔 때 비율 재계산
-window.removeEventListener('resize', scaleStage);
-window.addEventListener('resize', () => {
-    updateZoom();
-});
-
-// 확대/축소 버튼 이벤트
+// 확대 버튼: 이제 그리기/지우개 모드에서도 제한 없이 작동합니다.
 document.querySelector('#btn-zoom-in').addEventListener('click', () => {
     if (currentZoom < 200) {
         currentZoom += 10;
@@ -201,6 +232,7 @@ document.querySelector('#btn-zoom-in').addEventListener('click', () => {
     }
 });
 
+// 축소 버튼: 이제 그리기/지우개 모드에서도 제한 없이 작동합니다.
 document.querySelector('#btn-zoom-out').addEventListener('click', () => {
     if (currentZoom > 50) {
         currentZoom -= 10;
@@ -208,94 +240,104 @@ document.querySelector('#btn-zoom-out').addEventListener('click', () => {
     }
 });
 
-// --------------------------------------------------
-// 🖱️ 마우스 & 터치 드래그(Pan) 이벤트 리스너 추가
-// --------------------------------------------------
+// ==================================================
+// 🖱️ 배경 마우스 드래그 이동 (포인터 모드일 때만 동작)
+// ==================================================
+const viewport = document.querySelector('#viewport');
 
-// 드래그 시작 함수
-function startDrag(e) {
-    if (currentZoom <= 100) return; // 100% 이하에서는 드래그 불가
-
+viewport.addEventListener('mousedown', (e) => {
+    if (currentMode !== 'pointer' || currentZoom <= 100) return;
     isDragging = true;
     stage.style.cursor = 'grabbing';
+    startX = e.pageX - panX;
+    startY = e.pageY - panY;
+});
 
-    // 마우스 이벤트와 터치 이벤트의 좌표 분기 처리
-    const pageX = e.pageX || e.touches[0].pageX;
-    const pageY = e.pageY || e.touches[0].pageY;
-
-    startX = pageX - panX;
-    startY = pageY - panY;
-}
-
-// 드래그 진행 함수
-function doDrag(e) {
+window.addEventListener('mousemove', (e) => {
     if (!isDragging) return;
-
-    e.preventDefault(); // 브라우저 기본 스크롤 및 텍스트 선택 방지
-
-    const pageX = e.pageX || e.touches[0].pageX;
-    const pageY = e.pageY || e.touches[0].pageY;
-
-    panX = pageX - startX;
-    panY = pageY - startY;
-
+    panX = e.pageX - startX;
+    panY = e.pageY - startY;
     updateZoom();
-}
+});
 
-// 드래그 종료 함수
-function endDrag() {
+window.addEventListener('mouseup', () => {
     if (!isDragging) return;
     isDragging = false;
     stage.style.cursor = currentZoom > 100 ? 'grab' : 'default';
-}
-
-// #viewport 영역 전체에서 드래그 이벤트를 감지하도록 설정 (카드를 비껴서 배경을 잡아당길 수 있게)
-const viewport = document.querySelector('#viewport');
-
-// 마우스 이벤트 등록
-viewport.addEventListener('mousedown', startDrag);
-window.addEventListener('mousemove', doDrag);
-window.addEventListener('mouseup', endDrag);
-
-// 터치 이벤트 등록 (모바일/태블릿용)
-viewport.addEventListener('touchstart', startDrag, { passive: false });
-window.addEventListener('touchmove', doDrag, { passive: false });
-window.addEventListener('touchend', endDrag);
-
-// 초기 실행
-updateZoom();
+});
 
 // ==================================================
-// 📸 캡처 기능 구현 (배경을 순백색으로 강제 지정)
+// 🖋️ HTML5 Canvas 실제 드로잉 / 지우개 로직 구현
+// ==================================================
+canvas.addEventListener('mousedown', (e) => {
+    if (currentMode === 'pointer') return;
+    isDrawing = true;
+    ctx.beginPath();
+    ctx.moveTo(e.clientX, e.clientY);
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    if (!isDrawing || currentMode === 'pointer') return;
+
+    if (currentMode === 'draw') {
+        ctx.lineTo(e.clientX, e.clientY);
+        ctx.strokeStyle = '#e6683b'; // 주황색 펜
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+    } else if (currentMode === 'erase') {
+        // 지우개 모드: 투명하게 지우는 브러시 효과
+        ctx.save();
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(e.clientX, e.clientY, 20, 0, Math.PI * 2, false);
+        ctx.fill();
+        ctx.restore();
+    }
+});
+
+window.addEventListener('mouseup', () => {
+    isDrawing = false;
+});
+
+// ==================================================
+// 📸 [수정] 캡처 기능 (흰 배경 처리 + 필기 레이어 병합 기능)
 // ==================================================
 document.querySelector('#btn-capture').addEventListener('click', () => {
     const targetElement = document.querySelector('#viewport');
     const toolbar = document.querySelector('#top-toolbar');
 
-    // 1. 원래의 배경 스타일 기억해두기
     const originalBgColor = targetElement.style.backgroundColor;
     const originalBgImage = targetElement.style.backgroundImage;
 
-    // 2. 캡처를 위해 상단 툴바를 숨기고, 배경을 흰색(#ffffff)으로 변경
     if (toolbar) toolbar.style.visibility = 'hidden';
     targetElement.style.backgroundColor = '#ffffff';
-    targetElement.style.backgroundImage = 'none'; // 격자무늬 일시 제거
+    targetElement.style.backgroundImage = 'none';
 
-    // 3. html2canvas 실행
     html2canvas(targetElement, {
         useCORS: true,
         allowTaint: true,
-        backgroundColor: '#ffffff', // 캔버스 자체 기본 배경색도 흰색으로 지정
+        backgroundColor: '#ffffff',
     })
-        .then((canvas) => {
-            // 4. 캡처가 완료되면 즉시 원래 스타일로 원상복구
+        .then((mapCanvas) => {
+            // 원상 복구
             if (toolbar) toolbar.style.visibility = 'visible';
             targetElement.style.backgroundColor = originalBgColor;
             targetElement.style.backgroundImage = originalBgImage;
 
-            // 5. 이미지 다운로드 처리
-            const imageType = 'image/png';
-            const imageData = canvas.toDataURL(imageType);
+            // ★ 필기 레이어(Drawing Canvas)와 맵 캡처본을 하나로 합성하기
+            const combinedCanvas = document.createElement('canvas');
+            combinedCanvas.width = mapCanvas.width;
+            combinedCanvas.height = mapCanvas.height;
+            const combinedCtx = combinedCanvas.getContext('2d');
+
+            // 1단계: 흰색 바탕 배경 및 마인드맵 그리기
+            combinedCtx.drawImage(mapCanvas, 0, 0);
+            // 2단계: 그 위에 필기했던 내용 레이어 그대로 얹기
+            combinedCtx.drawImage(canvas, 0, 0);
+
+            const imageData = combinedCanvas.toDataURL('image/png');
 
             const downloadLink = document.createElement('a');
             downloadLink.href = imageData;
@@ -306,10 +348,12 @@ document.querySelector('#btn-capture').addEventListener('click', () => {
             document.body.removeChild(downloadLink);
         })
         .catch((error) => {
-            console.error('캡처 중 오류가 발생했습니다:', error);
-            // 오류가 발생하더라도 화면이 원래대로 복구되도록 보장
+            console.error('캡처 오류:', error);
             if (toolbar) toolbar.style.visibility = 'visible';
             targetElement.style.backgroundColor = originalBgColor;
             targetElement.style.backgroundImage = originalBgImage;
         });
 });
+
+// 초기화 호출
+updateZoom();
