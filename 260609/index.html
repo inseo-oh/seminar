@@ -9,34 +9,61 @@
     </head>
     <body>
         <header id="top-toolbar" aria-label="상단 도구 모음">
-            <div class="logo-area">
-                <span class="logo-text">개념 맵!</span>
-            </div>
-            <div class="control-area">
-                <div class="mode-controls" aria-label="작업 모드 선택">
-                    <button type="button" id="btn-mode-draw" class="btn-mode" aria-label="그리기 모드">
-                        ✏️
-                    </button>
-                    <button type="button" id="btn-mode-erase" class="btn-mode" aria-label="지우개 모드">
-                        🧼
-                    </button>
-                    <button
-                        type="button"
-                        id="btn-mode-pointer"
-                        class="btn-mode is-active"
-                        aria-label="포인터 모드"
-                    >
-                        🖱️
+            <div class="toolbar-default-view">
+                <div class="logo-area">
+                    <span class="logo-text">개념 맵!</span>
+                </div>
+                <div class="control-area">
+                    <div class="mode-controls" aria-label="작업 모드 선택">
+                        <button type="button" id="btn-mode-draw" class="btn-mode" aria-label="그리기 모드">
+                            ✏️
+                        </button>
+                        <button type="button" id="btn-mode-erase" class="btn-mode" aria-label="지우개 모드">
+                            🧼
+                        </button>
+                        <button
+                            type="button"
+                            id="btn-mode-pointer"
+                            class="btn-mode is-active"
+                            aria-label="포인터 모드"
+                        >
+                            🖱️
+                        </button>
+                    </div>
+
+                    <button type="button" id="btn-all-open" class="btn-rect">전체 열기</button>
+                    <button type="button" id="btn-capture" class="btn-circle" aria-label="화면 캡처">
+                        📷
                     </button>
                 </div>
+            </div>
 
-                <button type="button" id="btn-all-open" class="btn-rect">전체 열기</button>
-                <button type="button" id="btn-capture" class="btn-circle" aria-label="화면 캡처">
-                    <span class="icon-camera" aria-hidden="true">📷</span>
-                </button>
-                <button type="button" id="btn-play" class="btn-circle" aria-label="재생">
-                    <span class="icon-play" aria-hidden="true">▶</span>
-                </button>
+            <div id="player-toolbar-layer" class="player-view-hidden">
+                <div class="player-left-controls">
+                    <button type="button" id="player-play-pause" aria-label="재생/일시정지">⏸️</button>
+                    <button type="button" id="player-stop" aria-label="정지">⏹️</button>
+                    <button type="button" id="player-repeat" aria-label="반복 토글">🔁</button>
+                </div>
+
+                <div class="player-timeline-area">
+                    <span class="time-display current-time">00:00</span>
+                    <div class="timeline-slider-wrapper">
+                        <input type="range" id="player-slider" min="0" max="100" value="30" />
+                    </div>
+                    <span class="time-display total-time">02:34</span>
+                </div>
+
+                <div class="player-right-controls">
+                    <button type="button" id="player-speed" class="player-badge">× 1.0</button>
+                    <button type="button" id="player-volume" aria-label="음량">🔊</button>
+                    <div class="volume-slider-wrapper">
+                        <div class="volume-bar-mock"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="toolbar-fixed-right">
+                <button type="button" id="btn-play" class="btn-circle" aria-label="재생">▶</button>
                 <div class="zoom-controls" aria-label="화면 배율 조절">
                     <button type="button" id="btn-zoom-out" aria-label="축소">−</button>
                     <span id="zoom-indicator" aria-live="polite">100 %</span>
@@ -47,7 +74,6 @@
 
         <main id="viewport" aria-label="입체도형 개념 맵 인터랙티브">
             <canvas id="drawing-canvas"></canvas>
-
             <section id="stage">
                 <div class="mindmap">
                     <article class="center-topic">

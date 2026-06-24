@@ -357,3 +357,69 @@ document.querySelector('#btn-capture').addEventListener('click', () => {
 
 // 초기화 호출
 updateZoom();
+
+// ==================================================
+// 🎵 플레이어 UI 활성화 및 토글 제어 시스템
+// ==================================================
+const btnPlay = document.querySelector('#btn-play');
+const defaultView = document.querySelector('.toolbar-default-view');
+const playerLayer = document.querySelector('#player-toolbar-layer');
+
+btnPlay.addEventListener('click', () => {
+    // 현재 버튼 상태 체크
+    const isPlayingMode = btnPlay.textContent === '▶';
+
+    if (isPlayingMode) {
+        // --------------------------------------------------
+        // [플레이어 화면 진입 및 버튼을 X로 변경]
+        // --------------------------------------------------
+        btnPlay.textContent = '❌';
+        btnPlay.classList.add('is-close-state');
+        btnPlay.setAttribute('aria-label', '플레이어 닫기');
+
+        // 기본 도구모음 밀어내며 페이드아웃 후 플레이어 레이어 등판
+        defaultView.classList.add('default-view-fadeout');
+        playerLayer.classList.remove('player-view-hidden');
+        playerLayer.classList.add('player-view-active');
+    } else {
+        // --------------------------------------------------
+        // [플레이어 종료 및 버튼 복구]
+        // --------------------------------------------------
+        btnPlay.textContent = '▶';
+        btnPlay.classList.remove('is-close-state');
+        btnPlay.setAttribute('aria-label', '재생');
+
+        // 플레이어 레이어 숨기고 원래 메뉴 복구
+        playerLayer.classList.remove('player-view-active');
+        playerLayer.classList.add('player-view-hidden');
+        defaultView.classList.remove('default-view-fadeout');
+    }
+});
+
+// --------------------------------------------------
+// 🎛️ 플레이어 내부 요소 이벤트 (프로토타입 기능 확장용)
+// --------------------------------------------------
+const playPauseBtn = document.getElementById('player-play-pause');
+playPauseBtn.addEventListener('click', () => {
+    if (playPauseBtn.textContent === '⏸️') {
+        playPauseBtn.textContent = '▶️';
+    } else {
+        playPauseBtn.textContent = '⏸️';
+    }
+});
+
+const timelineSlider = document.getElementById('player-slider');
+const currentTimeIndicator = document.querySelector('.current-time');
+
+// 슬라이더 바를 조작하면 타임 분초 코드가 실시간으로 연동되는 목업 효과
+timelineSlider.addEventListener('input', (e) => {
+    const value = e.target.value;
+    // 전체 2분 34초(154초) 기준 계산 처리
+    const totalSeconds = 154;
+    const currentSeconds = Math.floor((value / 100) * totalSeconds);
+
+    const min = String(Math.floor(currentSeconds / 60)).padStart(2, '0');
+    const sec = String(currentSeconds % 60).padStart(2, '0');
+
+    currentTimeIndicator.textContent = `${min}:${sec}`;
+});
