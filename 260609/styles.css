@@ -208,7 +208,7 @@ button {
 .line-a {
     left: 960px;
     top: 220px;
-    width: 242px;         /* 정밀 계산 거리: 241.66px */
+    width: 242px; /* 정밀 계산 거리: 241.66px */
     transform: rotate(155.6deg); /* 정밀 계산 각도: 155.56° */
 }
 
@@ -216,8 +216,8 @@ button {
 .line-b {
     left: 960px;
     top: 220px;
-    width: 242px;         /* 정밀 계산 거리: 241.66px */
-    transform: rotate(24.4deg);  /* 정밀 계산 각도: 24.44° */
+    width: 242px; /* 정밀 계산 거리: 241.66px */
+    transform: rotate(24.4deg); /* 정밀 계산 각도: 24.44° */
 }
 
 /* 개념 카드 공통 디자인 */
@@ -419,4 +419,100 @@ button {
     top: 390px;
     width: 460px;
     transform: rotate(68deg);
+}
+
+/* styles.css 하단에 추가 */
+
+/* 상단 툴바 레이아웃 */
+#top-toolbar {
+    position: fixed;
+    top: 15px;
+    left: 20px;
+    right: 20px;
+    height: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100; /* 최상단 고정 */
+    pointer-events: auto;
+}
+
+.logo-area {
+    background: #4a90e2;
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.control-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 전체 열기 버튼 (주황색 사각형) */
+.btn-rect {
+    background: #e6683b; /* 메인 오렌지 */
+    color: white;
+    border: none;
+    border-radius: 18px;
+    padding: 8px 20px;
+    font-weight: bold;
+    font-size: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.1s;
+}
+
+/* 동그라미 아이콘 버튼들 */
+.btn-circle {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: #235cd6; /* 파란색 베이스 */
+    color: white;
+    display: grid;
+    place-items: center;
+    font-size: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 확대 / 축소 컨트롤 바 */
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 3px solid #4a90e2;
+    border-radius: 25px;
+    padding: 2px 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.zoom-controls button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #4a90e2;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+}
+
+#zoom-indicator {
+    min-width: 70px;
+    text-align: center;
+    font-weight: bold;
+    color: #1c2438;
+    font-size: 16px;
+}
+
+/* 클릭 피드백 효과 */
+#top-toolbar button:active {
+    transform: scale(0.95);
 }

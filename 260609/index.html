@@ -7,6 +7,25 @@
         <link rel="stylesheet" href="styles.css" />
     </head>
     <body>
+        <header id="top-toolbar" aria-label="상단 도구 모음">
+            <div class="logo-area">
+                <span class="logo-text">개념 맵!</span>
+            </div>
+            <div class="control-area">
+                <button type="button" id="btn-all-open" class="btn-rect">전체 열기</button>
+                <button type="button" id="btn-capture" class="btn-circle" aria-label="화면 캡처">
+                    <span class="icon-camera" aria-hidden="true">📷</span>
+                </button>
+                <button type="button" id="btn-play" class="btn-circle" aria-label="재생">
+                    <span class="icon-play" aria-hidden="true">▶</span>
+                </button>
+                <div class="zoom-controls" aria-label="화면 배율 조절">
+                    <button type="button" id="btn-zoom-out" aria-label="축소">−</button>
+                    <span id="zoom-indicator" aria-live="polite">100 %</span>
+                    <button type="button" id="btn-zoom-in" aria-label="확대">+</button>
+                </div>
+            </div>
+        </header>
         <main id="viewport" aria-label="입체도형 개념 맵 인터랙티브">
             <section id="stage">
                 <div class="mindmap">
