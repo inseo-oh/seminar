@@ -157,24 +157,44 @@ btnAllOpen.addEventListener('click', () => {
 let currentZoom = 100; // 기본 100%
 const zoomIndicator = document.querySelector('#zoom-indicator');
 
+// 드래그 상태 관리를 위한 변수
+let isDragging = false;
+let startX = 0,
+    startY = 0;
+let panX = 0,
+    panY = 0;
+
+// 화면 스케일 및 위치 업데이트 함수
 function updateZoom() {
     zoomIndicator.textContent = `${currentZoom} %`;
-    // 기존 자동 스케일 값에 사용자가 임의로 조절한 배율(currentZoom / 100)을 곱해 적용합니다.
+
     const baseScale = Math.min(window.innerWidth / BASE_WIDTH, window.innerHeight / BASE_HEIGHT);
     const finalScale = baseScale * (currentZoom / 100);
     stage.style.setProperty('--stage-scale', finalScale);
+
+    // 100% 이하일 때는 드래그 위치를 강제로 초기화(중앙 고정)
+    if (currentZoom <= 100) {
+        panX = 0;
+        panY = 0;
+        stage.style.cursor = 'default';
+    } else {
+        stage.style.cursor = 'grab';
+    }
+
+    // transform에 scale과 함께 드래그 이동 거리(translate)를 적용
+    // (초기 중심점 이동인 translate(-50%, -50%)를 유지하면서 panX, panY 만큼 더 이동)
+    stage.style.transform = `translate(calc(-50% + ${panX}px), calc(-50% + ${panY}px)) scale(${finalScale})`;
 }
 
-// 기존 scaleStage 함수가 있다면 내부 로직을 updateZoom 호출로 동기화해주면 좋습니다.
-// 함수 덮어쓰기 또는 수정:
+// 창 크기가 바뀔 때 비율 재계산
 window.removeEventListener('resize', scaleStage);
 window.addEventListener('resize', () => {
     updateZoom();
 });
 
+// 확대/축소 버튼 이벤트
 document.querySelector('#btn-zoom-in').addEventListener('click', () => {
     if (currentZoom < 200) {
-        // 최대 200% 제한
         currentZoom += 10;
         updateZoom();
     }
@@ -182,20 +202,64 @@ document.querySelector('#btn-zoom-in').addEventListener('click', () => {
 
 document.querySelector('#btn-zoom-out').addEventListener('click', () => {
     if (currentZoom > 50) {
-        // 최소 50% 제한
         currentZoom -= 10;
         updateZoom();
     }
 });
 
-// 3. 캡처 및 재생 버튼 (기능 프로토타입 연결용 알림)
-document.querySelector('#btn-capture').addEventListener('click', () => {
-    alert('현재 화면을 캡처하여 저장합니다. (기능 준비 중)');
-});
+// --------------------------------------------------
+// 🖱️ 마우스 & 터치 드래그(Pan) 이벤트 리스너 추가
+// --------------------------------------------------
 
-document.querySelector('#btn-play').addEventListener('click', () => {
-    alert('개념 가이드 애니메이션을 시작합니다. (기능 준비 중)');
-});
+// 드래그 시작 함수
+function startDrag(e) {
+    if (currentZoom <= 100) return; // 100% 이하에서는 드래그 불가
 
-// 초기 실행 시 줌 적용
+    isDragging = true;
+    stage.style.cursor = 'grabbing';
+
+    // 마우스 이벤트와 터치 이벤트의 좌표 분기 처리
+    const pageX = e.pageX || e.touches[0].pageX;
+    const pageY = e.pageY || e.touches[0].pageY;
+
+    startX = pageX - panX;
+    startY = pageY - panY;
+}
+
+// 드래그 진행 함수
+function doDrag(e) {
+    if (!isDragging) return;
+
+    e.preventDefault(); // 브라우저 기본 스크롤 및 텍스트 선택 방지
+
+    const pageX = e.pageX || e.touches[0].pageX;
+    const pageY = e.pageY || e.touches[0].pageY;
+
+    panX = pageX - startX;
+    panY = pageY - startY;
+
+    updateZoom();
+}
+
+// 드래그 종료 함수
+function endDrag() {
+    if (!isDragging) return;
+    isDragging = false;
+    stage.style.cursor = currentZoom > 100 ? 'grab' : 'default';
+}
+
+// #viewport 영역 전체에서 드래그 이벤트를 감지하도록 설정 (카드를 비껴서 배경을 잡아당길 수 있게)
+const viewport = document.querySelector('#viewport');
+
+// 마우스 이벤트 등록
+viewport.addEventListener('mousedown', startDrag);
+window.addEventListener('mousemove', doDrag);
+window.addEventListener('mouseup', endDrag);
+
+// 터치 이벤트 등록 (모바일/태블릿용)
+viewport.addEventListener('touchstart', startDrag, { passive: false });
+window.addEventListener('touchmove', doDrag, { passive: false });
+window.addEventListener('touchend', endDrag);
+
+// 초기 실행
 updateZoom();
