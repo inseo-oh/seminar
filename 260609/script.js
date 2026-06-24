@@ -266,45 +266,50 @@ window.addEventListener('touchend', endDrag);
 updateZoom();
 
 // ==================================================
-// 📸 [수정] 캡처 기능 구현 (html2canvas 활용)
+// 📸 캡처 기능 구현 (배경을 순백색으로 강제 지정)
 // ==================================================
 document.querySelector('#btn-capture').addEventListener('click', () => {
-    // 1. 캡처할 대상 영역 지정
-    // #top-toolbar를 제외하기 위해, 콘텐츠가 담겨 있는 #viewport 영역을 지정합니다.
     const targetElement = document.querySelector('#viewport');
-
-    // 2. 캡처 시 상단 툴바가 일시적으로 보이지 않도록 스타일 처리 (선택)
-    // #viewport 내부에 툴바가 포함되어 있다면 아래 코드가 툴바를 캡처에서 완벽히 제외해 줍니다.
     const toolbar = document.querySelector('#top-toolbar');
+
+    // 1. 원래의 배경 스타일 기억해두기
+    const originalBgColor = targetElement.style.backgroundColor;
+    const originalBgImage = targetElement.style.backgroundImage;
+
+    // 2. 캡처를 위해 상단 툴바를 숨기고, 배경을 흰색(#ffffff)으로 변경
     if (toolbar) toolbar.style.visibility = 'hidden';
+    targetElement.style.backgroundColor = '#ffffff';
+    targetElement.style.backgroundImage = 'none'; // 격자무늬 일시 제거
 
     // 3. html2canvas 실행
     html2canvas(targetElement, {
-        useCORS: true, // 외부 이미지(PNG 등)가 있을 경우 불러오기 허용
+        useCORS: true,
         allowTaint: true,
-        backgroundColor: null, // 배경을 투명하게 하거나 CSS 설정을 그대로 따름
+        backgroundColor: '#ffffff', // 캔버스 자체 기본 배경색도 흰색으로 지정
     })
         .then((canvas) => {
-            // 캡처가 끝난 후 툴바 다시 표시
+            // 4. 캡처가 완료되면 즉시 원래 스타일로 원상복구
             if (toolbar) toolbar.style.visibility = 'visible';
+            targetElement.style.backgroundColor = originalBgColor;
+            targetElement.style.backgroundImage = originalBgImage;
 
-            // 4. Canvas 데이터를 PNG 데이터 URL로 변환
+            // 5. 이미지 다운로드 처리
             const imageType = 'image/png';
             const imageData = canvas.toDataURL(imageType);
 
-            // 5. 가상 가상 링크(a 태그)를 만들어 다운로드 트리거
             const downloadLink = document.createElement('a');
             downloadLink.href = imageData;
-            downloadLink.download = CAPTURE_FILE_NAME; // 전역 변수에 지정된 파일명 사용
+            downloadLink.download = CAPTURE_FILE_NAME;
 
-            // 브라우저에 임시 부착 후 클릭하고 제거
             document.body.appendChild(downloadLink);
             downloadLink.click();
             document.body.removeChild(downloadLink);
         })
         .catch((error) => {
             console.error('캡처 중 오류가 발생했습니다:', error);
-            // 오류 발생 시 툴바 복구 보장
+            // 오류가 발생하더라도 화면이 원래대로 복구되도록 보장
             if (toolbar) toolbar.style.visibility = 'visible';
+            targetElement.style.backgroundColor = originalBgColor;
+            targetElement.style.backgroundImage = originalBgImage;
         });
 });
