@@ -423,3 +423,320 @@ timelineSlider.addEventListener('input', (e) => {
 
     currentTimeIndicator.textContent = `${min}:${sec}`;
 });
+
+// ==================================================
+// 🎵 오디오 미디어 재생 제어 및 전개 엔진 데이터셋
+// ==================================================
+
+// 총 37개 파일 목록 생성 및 대본 번호별 트리거 매핑 타임 데이터 구조화
+// (시간은 각 한 문장씩 약 4초 간격 자동 배정, 총 154초 구성)
+const PLAYLIST_SIZE = 37;
+const audioTimelineMap = [];
+let accumulatedTime = 0;
+
+for (let i = 1; i <= PLAYLIST_SIZE; i++) {
+    const duration = 4; // 각 클립당 가상 재생 지속시간 (초)
+    audioTimelineMap.push({
+        index: i,
+        filename: `6-1_2_ (${i}).mp3`,
+        startTime: accumulatedTime,
+        endTime: accumulatedTime + duration,
+    });
+    accumulatedTime += duration;
+}
+
+let currentAudioElement = null;
+let playbackSpeed = 1.0;
+let isPlaying = false;
+let isRepeatMode = false;
+let currentTimelineSeconds = 0;
+let playbackTimerInterval = null;
+
+const playerSlider = document.getElementById('player-slider');
+const currentTimeText = document.querySelector('.current-time');
+const speedBadge = document.getElementById('player-speed');
+const speedMenu = document.getElementById('speed-picker-menu');
+const volumeSlider = document.getElementById('volume-range-slider');
+
+// ==================================================
+// 🎚️ [구현] 볼륨 및 배속 제어 바인딩
+// ==================================================
+// 1. 볼륨 드래그 연동
+volumeSlider.addEventListener('input', (e) => {
+    const vol = e.target.value;
+    if (currentAudioElement) currentAudioElement.volume = vol;
+    document.getElementById('player-volume').textContent = vol == 0 ? '🔇' : vol < 0.5 ? '🔉' : '🔊';
+});
+
+// 2. 배속 팝업 선택 제어
+speedBadge.addEventListener('click', (e) => {
+    e.stopPropagation();
+    speedMenu.classList.toggle('speed-menu-hidden');
+});
+document.addEventListener('click', () => speedMenu.classList.add('speed-menu-hidden'));
+
+speedMenu.querySelectorAll('button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        speedMenu.querySelectorAll('button').forEach((b) => b.classList.remove('active-speed'));
+        btn.classList.add('active-speed');
+        playbackSpeed = parseFloat(btn.dataset.speed);
+        speedBadge.textContent = `× ${btn.dataset.speed}`;
+        if (currentAudioElement) currentAudioElement.defaultPlaybackRate = playbackSpeed;
+        if (currentAudioElement) currentAudioElement.playbackRate = playbackSpeed;
+    });
+});
+
+// 반복 토글
+document.getElementById('player-repeat').addEventListener('click', function () {
+    isRepeatMode = !isRepeatMode;
+    this.style.background = isRepeatMode ? 'rgba(255,255,255,0.4)' : 'transparent';
+});
+
+// ==================================================
+// ⏱️ 타임라인 및 마인드맵 상태 연동 코어 엔진
+// ==================================================
+function syncMindmapState(seconds) {
+    // 지정 초가 속한 오디오 인덱스 파악
+    const activeClip =
+        audioTimelineMap.find((item) => seconds >= item.startTime && seconds < item.endTime) ||
+        audioTimelineMap[audioTimelineMap.length - 1];
+    const idx = activeClip.index;
+
+    // 단계별 UI 노출 누적 상태 자동 렌더링
+    // [1단계: 인트로그룹] 1번부터 바로 중앙 노드는 오픈 상태
+
+    // [2단계: 각기둥 대주제] idx >= 19 일 때 'prism' 분기 오픈
+    const topicsLayer = document.querySelector('#topics');
+    const prismCardsLayer = document.querySelector('#prism-cards');
+    const pyramidCardsLayer = document.querySelector('#pyramid-cards');
+
+    if (idx >= 19) {
+        topicsLayer.classList.add('is-visible');
+        document.querySelector('.center-topic .toggle').setAttribute('aria-expanded', 'true');
+    } else {
+        topicsLayer.classList.remove('is-visible');
+        document.querySelector('.center-topic .toggle').setAttribute('aria-expanded', 'false');
+    }
+
+    // [각기둥 상세 카드 및 물음표 자동 오픈 연동]
+    const prismDefCard = document.querySelector('.prism-def');
+    const prismCompCard = document.querySelector('.prism-components');
+    const prismNamesCard = document.querySelector('.prism-names-dev');
+
+    if (idx >= 19) {
+        prismCardsLayer.classList.add('is-visible');
+        document.querySelector('[aria-controls="prism-cards"]').setAttribute('aria-expanded', 'true');
+    } else {
+        prismCardsLayer.classList.remove('is-visible');
+    }
+    if (idx >= 19) prismDefCard.classList.add('is-revealed');
+    else prismDefCard.classList.remove('is-revealed');
+    if (idx >= 20) prismCompCard.classList.add('is-revealed');
+    else prismCompCard.classList.remove('is-revealed');
+    if (idx >= 22) prismNamesCard.classList.add('is-revealed');
+    else prismNamesCard.classList.remove('is-revealed');
+
+    // 각기둥 내부 미니 말풍선 단서(퀴즈) 연동 (20, 21번 클립)
+    document.querySelectorAll('.pq-prism').forEach((btn, bIdx) => {
+        if (idx >= 21) btn.classList.add('is-hidden');
+        else btn.classList.remove('is-hidden');
+    });
+
+    // [3단계: 각뿔 대주제 오디오 돌입] idx >= 26 일 때 'pyramid' 분기 집중 전개
+    const pyramidDefCard = document.querySelector('.pyramid-def');
+    const pyramidCompCard = document.querySelector('.pyramid-components');
+    const pyramidNamesCard = document.querySelector('.pyramid-names');
+
+    if (idx >= 26) {
+        pyramidCardsLayer.classList.add('is-visible');
+        document.querySelector('[aria-controls="pyramid-cards"]').setAttribute('aria-expanded', 'true');
+    } else {
+        pyramidCardsLayer.classList.remove('is-visible');
+    }
+    if (idx >= 26) pyramidDefCard.classList.add('is-revealed');
+    else pyramidDefCard.classList.remove('is-revealed');
+    if (idx >= 27) pyramidCompCard.classList.add('is-revealed');
+    else pyramidCompCard.classList.remove('is-revealed');
+    if (idx >= 30) pyramidNamesCard.classList.add('is-revealed');
+    else pyramidNamesCard.classList.remove('is-revealed');
+
+    // 각뿔 내부 미니 퀴즈 해제 (27, 28, 29번 클립 진행 과정 완료)
+    document.querySelectorAll('.pq-pyramid').forEach((btn) => {
+        if (idx >= 29) btn.classList.add('is-hidden');
+        else btn.classList.remove('is-hidden');
+    });
+
+    // ==================================================
+    // 🔄 [핵심] 31번 클립 이후: 전체 복습 및 리마인드 하이라이팅 연동
+    // ==================================================
+    // 모든 카드 포커스 이펙트 초기화
+    document.querySelectorAll('.concept-card').forEach((c) => (c.style.outline = 'none'));
+
+    if (idx === 32) {
+        // 각기둥 전체 구역 되돌아보기 포커싱
+        prismDefCard.style.outline = '5px solid var(--orange)';
+        prismCompCard.style.outline = '5px solid var(--orange)';
+        prismNamesCard.style.outline = '5px solid var(--orange)';
+    } else if (idx === 33) {
+        // 각뿔 전체 구역 되돌아보기 포커싱
+        pyramidDefCard.style.outline = '5px solid var(--green)';
+        pyramidCompCard.style.outline = '5px solid var(--green)';
+        pyramidNamesCard.style.outline = '5px solid var(--green)';
+    }
+}
+
+// ==================================================
+// 🎮 재생 오디오 실발화 바인딩 컨트롤 엔진
+// ==================================================
+function playCurrentSegment() {
+    if (!isPlaying) return;
+
+    const currentClip = audioTimelineMap.find(
+        (item) => currentTimelineSeconds >= item.startTime && currentTimelineSeconds < item.endTime
+    );
+    if (!currentClip) {
+        handlePlaybackEnd();
+        return;
+    }
+
+    // 만약 이미 오디오 객체가 있고 현재 재생할 파일과 동일하다면 새로 생성 안 함
+    const srcPath = `audio/6-1_2_ (${currentClip.index}).mp3`;
+
+    if (!currentAudioElement || currentAudioElement.src.indexOf(encodeURI(srcPath)) === -1) {
+        if (currentAudioElement) {
+            currentAudioElement.pause();
+            currentAudioElement = null;
+        }
+
+        currentAudioElement = new Audio(srcPath);
+        currentAudioElement.volume = volumeSlider.value;
+        currentAudioElement.playbackRate = playbackSpeed;
+
+        // 해당 개별 오디오가 종료되면 다음 인덱스 계산으로 브릿지 연결
+        currentAudioElement.addEventListener('ended', () => {
+            if (isPlaying) {
+                currentTimelineSeconds = currentClip.endTime;
+                if (currentTimelineSeconds >= 154) {
+                    handlePlaybackEnd();
+                } else {
+                    playerSlider.value = currentTimelineSeconds;
+                    updateTimeDisplay(currentTimelineSeconds);
+                    syncMindmapState(currentTimelineSeconds);
+                    playCurrentSegment();
+                }
+            }
+        });
+        currentAudioElement.play().catch(() => {
+            // 오디오 파일이 디렉토리에 배치 안 된 환경을 대비한 오토 세컨드 시뮬레이터 백업
+            startFallbackTimer();
+        });
+    } else {
+        currentAudioElement.play().catch(() => {});
+    }
+}
+
+let fallbackInterval = null;
+function startFallbackTimer() {
+    if (fallbackInterval) return;
+    fallbackInterval = setInterval(() => {
+        if (!isPlaying) {
+            clearInterval(fallbackInterval);
+            fallbackInterval = null;
+            return;
+        }
+        currentTimelineSeconds += 1 * playbackSpeed;
+        if (currentTimelineSeconds >= 154) {
+            clearInterval(fallbackInterval);
+            fallbackInterval = null;
+            handlePlaybackEnd();
+        } else {
+            playerSlider.value = currentTimelineSeconds;
+            updateTimeDisplay(currentTimelineSeconds);
+            syncMindmapState(currentTimelineSeconds);
+        }
+    }, 1000);
+}
+
+function handlePlaybackEnd() {
+    if (isRepeatMode) {
+        currentTimelineSeconds = 0;
+        playerSlider.value = 0;
+        syncMindmapState(0);
+        playCurrentSegment();
+    } else {
+        stopPlayback();
+    }
+}
+
+function pausePlayback() {
+    isPlaying = false;
+    playPauseBtn.textContent = '▶️';
+    if (currentAudioElement) currentAudioElement.pause();
+    if (fallbackInterval) {
+        clearInterval(fallbackInterval);
+        fallbackInterval = null;
+    }
+}
+
+function startPlayback() {
+    isPlaying = true;
+    playPauseBtn.textContent = '⏸️';
+    playCurrentSegment();
+}
+
+function stopPlayback() {
+    isPlaying = false;
+    currentTimelineSeconds = 0;
+    playerSlider.value = 0;
+    updateTimeDisplay(0);
+    playPauseBtn.textContent = '▶️';
+    if (currentAudioElement) {
+        currentAudioElement.pause();
+        currentAudioElement = null;
+    }
+    if (fallbackInterval) {
+        clearInterval(fallbackInterval);
+        fallbackInterval = null;
+    }
+    syncMindmapState(0);
+}
+
+function updateTimeDisplay(sec) {
+    const min = String(Math.floor(sec / 60)).padStart(2, '0');
+    const remainingSec = String(Math.floor(sec % 60)).padStart(2, '0');
+    currentTimeText.textContent = `${min}:${remainingSec}`;
+}
+
+// ==================================================
+// 🖱️ [구현] 타임라인 슬라이더 마우스 드래그 스크러빙 연동
+// ==================================================
+playerSlider.addEventListener('input', (e) => {
+    const targetSeconds = parseInt(e.target.value);
+    currentTimelineSeconds = targetSeconds;
+    updateTimeDisplay(targetSeconds);
+    syncMindmapState(targetSeconds);
+
+    // 드래그 중인 위치의 오디오 싱크 맞추기
+    if (currentAudioElement) {
+        currentAudioElement.pause();
+        currentAudioElement = null;
+    }
+    if (isPlaying) {
+        playCurrentSegment();
+    }
+});
+
+// 하단 플레이어 플레이 인터페이스 바인딩
+playPauseBtn.addEventListener('click', () => {
+    if (isPlaying) pausePlayback();
+    else startPlayback();
+});
+document.getElementById('player-stop').addEventListener('click', stopPlayback);
+
+// 마스터 플레이바 레이어 온오프 토글 연동 보정
+document.querySelector('#btn-play').addEventListener('click', () => {
+    const isOpening = document.querySelector('#btn-play').textContent === '❌';
+    if (!isOpening) {
+        stopPlayback();
+    }
+});

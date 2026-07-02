@@ -830,3 +830,69 @@ body.mode-erase #drawing-canvas {
     font-size: 14px;
     font-weight: bold;
 }
+
+/* ==================================================
+   🎵 플레이어 조작 기능용 세부 보정 스타일
+   ================================================== */
+#speed-picker-menu {
+    position: absolute;
+    bottom: -185px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    border: 2px solid #5c93f0;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    padding: 5px 0;
+    width: 95px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    z-index: 200;
+    transition:
+        opacity 0.15s,
+        transform 0.15s;
+}
+.speed-menu-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(-10px);
+}
+#speed-picker-menu button {
+    background: transparent;
+    color: #1c2438 !important;
+    font-size: 13px !important;
+    padding: 6px 12px;
+    width: 100% !important;
+    height: auto !important;
+    border-radius: 0 !important;
+    text-align: center;
+    font-weight: 500;
+}
+#speed-picker-menu button:hover {
+    background: #edf4ff;
+}
+#speed-picker-menu button.active-speed {
+    color: #235cd6 !important;
+    font-weight: bold;
+}
+
+/* 볼륨 슬라이더 커스텀 */
+#volume-range-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 70px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+}
+#volume-range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
