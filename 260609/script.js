@@ -701,7 +701,8 @@ function syncMindmapState(seconds) {
 
         case 'REVIEW_PRISM':
             // 전체 다 보인 상태에서 [각기둥 카드 영역] 그룹 주황색 강조 집중 피드백
-            this.toggleAllElementsActive(); // 복제 상태 활성화 기본 헬퍼 호출 대체 가능
+            // 260702 OIS: ?????
+            // this.toggleAllElementsActive(); // 복제 상태 활성화 기본 헬퍼 호출 대체 가능
             [prismDefCard, prismCompCard, prismNamesCard].forEach((card) => {
                 card.classList.add('is-revealed');
                 card.style.outline = '5px solid var(--orange)';
