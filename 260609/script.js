@@ -414,8 +414,7 @@ const currentTimeIndicator = document.querySelector('.current-time');
 // 슬라이더 바를 조작하면 타임 분초 코드가 실시간으로 연동되는 목업 효과
 timelineSlider.addEventListener('input', (e) => {
     const value = e.target.value;
-    // 전체 2분 34초(154초) 기준 계산 처리
-    const totalSeconds = 154;
+    const totalSeconds = TOTAL_PLAYBACK_SECONDS;
     const currentSeconds = Math.floor((value / 100) * totalSeconds);
 
     const min = String(Math.floor(currentSeconds / 60)).padStart(2, '0');
@@ -425,25 +424,59 @@ timelineSlider.addEventListener('input', (e) => {
 });
 
 // ==================================================
-// 🎵 오디오 미디어 재생 제어 및 전개 엔진 데이터셋
+// 🎵 [전역 설정] 오디오 플레이리스트 및 화면 연동 트리거 정의
 // ==================================================
+// 파일명, 개수, 내용이 바뀌면 이 테이블(배열)만 수정하면 됩니다.
+// - index: 오디오 파일 번호 (6-1_2_ (번호).mp3)
+// - duration: 해당 오디오가 재생되는 가상 시간(초)
+// - action: 이 오디오 단계에서 실행할 화면 제어 키워드 (switch-case와 연동)
+var AUDIO_PLAYLIST_CONFIG = [
+    { index: 1, duration: 4, action: 'INTRO' },
+    { index: 2, duration: 4, action: 'INTRO' },
+    { index: 3, duration: 4, action: 'INTRO' },
+    { index: 4, duration: 4, action: 'INTRO' },
+    { index: 5, duration: 4, action: 'INTRO' },
+    { index: 6, duration: 4, action: 'INTRO' },
+    { index: 7, duration: 4, action: 'INTRO' },
+    { index: 8, duration: 4, action: 'INTRO' },
+    { index: 9, duration: 4, action: 'INTRO' },
+    { index: 10, duration: 4, action: 'INTRO' },
+    { index: 11, duration: 4, action: 'INTRO' },
+    { index: 12, duration: 4, action: 'INTRO' },
+    { index: 13, duration: 4, action: 'INTRO' },
+    { index: 14, duration: 4, action: 'INTRO' },
+    { index: 15, duration: 4, action: 'INTRO' },
+    { index: 16, duration: 4, action: 'INTRO' },
+    { index: 17, duration: 4, action: 'INTRO' },
+    { index: 18, duration: 4, action: 'INTRO' },
 
-// 총 37개 파일 목록 생성 및 대본 번호별 트리거 매핑 타임 데이터 구조화
-// (시간은 각 한 문장씩 약 4초 간격 자동 배정, 총 154초 구성)
-const PLAYLIST_SIZE = 37;
+    // 19번부터 각기둥 본격 전개
+    { index: 19, duration: 4, action: 'PRISM_OPEN' },
+    { index: 20, duration: 4, action: 'PRISM_COMPONENTS' },
+    { index: 21, duration: 4, action: 'PRISM_QUIZ_SOLVED' },
+    { index: 22, duration: 4, action: 'PRISM_NAMES' },
+    { index: 23, duration: 4, action: 'PRISM_NAMES' },
+    { index: 24, duration: 4, action: 'PRISM_NAMES' },
+    { index: 25, duration: 4, action: 'PRISM_NAMES' },
+
+    // 26번부터 각뿔 본격 전개
+    { index: 26, duration: 4, action: 'PYRAMID_OPEN' },
+    { index: 27, duration: 4, action: 'PYRAMID_COMPONENTS' },
+    { index: 28, duration: 4, action: 'PYRAMID_COMPONENTS' },
+    { index: 29, duration: 4, action: 'PYRAMID_QUIZ_SOLVED' },
+    { index: 30, duration: 4, action: 'PYRAMID_NAMES' },
+
+    // 31번부터 복습 및 하이라이팅 연동
+    { index: 31, duration: 4, action: 'REVIEW_START' },
+    { index: 32, duration: 4, action: 'REVIEW_PRISM' },
+    { index: 33, duration: 4, action: 'REVIEW_PYRAMID' },
+    { index: 34, duration: 4, action: 'REVIEW_END' },
+    { index: 35, duration: 4, action: 'REVIEW_END' },
+    { index: 36, duration: 4, action: 'REVIEW_END' },
+    { index: 37, duration: 4, action: 'REVIEW_END' },
+];
+
 const audioTimelineMap = [];
-let accumulatedTime = 0;
-
-for (let i = 1; i <= PLAYLIST_SIZE; i++) {
-    const duration = 4; // 각 클립당 가상 재생 지속시간 (초)
-    audioTimelineMap.push({
-        index: i,
-        filename: `6-1_2_ (${i}).mp3`,
-        startTime: accumulatedTime,
-        endTime: accumulatedTime + duration,
-    });
-    accumulatedTime += duration;
-}
 
 let currentAudioElement = null;
 let playbackSpeed = 1.0;
@@ -492,97 +525,226 @@ document.getElementById('player-repeat').addEventListener('click', function () {
     this.style.background = isRepeatMode ? 'rgba(255,255,255,0.4)' : 'transparent';
 });
 
+// 전역 설정을 바탕으로 실제 타임라인 초(seconds)를 동적 계산하여 빌드
+let TOTAL_PLAYBACK_SECONDS = 0;
+
+AUDIO_PLAYLIST_CONFIG.forEach((item) => {
+    audioTimelineMap.push({
+        index: item.index,
+        filename: `6-1_2_ (${item.index}).mp3`,
+        startTime: TOTAL_PLAYBACK_SECONDS,
+        endTime: TOTAL_PLAYBACK_SECONDS + item.duration,
+        action: item.action,
+    });
+    TOTAL_PLAYBACK_SECONDS += item.duration;
+});
+
+// HTML 인풋 맥스값 동적 셋팅 (전체 시간이 늘어나거나 줄어들어도 슬라이더가 자동 적응합니다)
+document.getElementById('player-slider').max = TOTAL_PLAYBACK_SECONDS;
+document.querySelector('.total-time').textContent = formatTimeDisplay(TOTAL_PLAYBACK_SECONDS);
+
 // ==================================================
-// ⏱️ 타임라인 및 마인드맵 상태 연동 코어 엔진
+// ⏱️ [리팩토링] 타임라인 및 마인드맵 상태 연동 코어 엔진 (Switch-Case 구조)
 // ==================================================
 function syncMindmapState(seconds) {
-    // 지정 초가 속한 오디오 인덱스 파악
+    // 1. 현재 초(seconds)가 속한 타겟 오디오 블록 검출
     const activeClip =
         audioTimelineMap.find((item) => seconds >= item.startTime && seconds < item.endTime) ||
         audioTimelineMap[audioTimelineMap.length - 1];
-    const idx = activeClip.index;
 
-    // 단계별 UI 노출 누적 상태 자동 렌더링
-    // [1단계: 인트로그룹] 1번부터 바로 중앙 노드는 오픈 상태
+    // 전역변수 목록에서 추출한 고유 동작 액션 키워드
+    const currentAction = activeClip.action;
 
-    // [2단계: 각기둥 대주제] idx >= 19 일 때 'prism' 분기 오픈
+    // DOM 요소 캐싱
     const topicsLayer = document.querySelector('#topics');
     const prismCardsLayer = document.querySelector('#prism-cards');
     const pyramidCardsLayer = document.querySelector('#pyramid-cards');
 
-    if (idx >= 19) {
-        topicsLayer.classList.add('is-visible');
-        document.querySelector('.center-topic .toggle').setAttribute('aria-expanded', 'true');
-    } else {
-        topicsLayer.classList.remove('is-visible');
-        document.querySelector('.center-topic .toggle').setAttribute('aria-expanded', 'false');
-    }
-
-    // [각기둥 상세 카드 및 물음표 자동 오픈 연동]
     const prismDefCard = document.querySelector('.prism-def');
     const prismCompCard = document.querySelector('.prism-components');
     const prismNamesCard = document.querySelector('.prism-names-dev');
 
-    if (idx >= 19) {
-        prismCardsLayer.classList.add('is-visible');
-        document.querySelector('[aria-controls="prism-cards"]').setAttribute('aria-expanded', 'true');
-    } else {
-        prismCardsLayer.classList.remove('is-visible');
-    }
-    if (idx >= 19) prismDefCard.classList.add('is-revealed');
-    else prismDefCard.classList.remove('is-revealed');
-    if (idx >= 20) prismCompCard.classList.add('is-revealed');
-    else prismCompCard.classList.remove('is-revealed');
-    if (idx >= 22) prismNamesCard.classList.add('is-revealed');
-    else prismNamesCard.classList.remove('is-revealed');
-
-    // 각기둥 내부 미니 말풍선 단서(퀴즈) 연동 (20, 21번 클립)
-    document.querySelectorAll('.pq-prism').forEach((btn, bIdx) => {
-        if (idx >= 21) btn.classList.add('is-hidden');
-        else btn.classList.remove('is-hidden');
-    });
-
-    // [3단계: 각뿔 대주제 오디오 돌입] idx >= 26 일 때 'pyramid' 분기 집중 전개
     const pyramidDefCard = document.querySelector('.pyramid-def');
     const pyramidCompCard = document.querySelector('.pyramid-components');
     const pyramidNamesCard = document.querySelector('.pyramid-names');
 
-    if (idx >= 26) {
-        pyramidCardsLayer.classList.add('is-visible');
-        document.querySelector('[aria-controls="pyramid-cards"]').setAttribute('aria-expanded', 'true');
-    } else {
-        pyramidCardsLayer.classList.remove('is-visible');
-    }
-    if (idx >= 26) pyramidDefCard.classList.add('is-revealed');
-    else pyramidDefCard.classList.remove('is-revealed');
-    if (idx >= 27) pyramidCompCard.classList.add('is-revealed');
-    else pyramidCompCard.classList.remove('is-revealed');
-    if (idx >= 30) pyramidNamesCard.classList.add('is-revealed');
-    else pyramidNamesCard.classList.remove('is-revealed');
-
-    // 각뿔 내부 미니 퀴즈 해제 (27, 28, 29번 클립 진행 과정 완료)
-    document.querySelectorAll('.pq-pyramid').forEach((btn) => {
-        if (idx >= 29) btn.classList.add('is-hidden');
-        else btn.classList.remove('is-hidden');
-    });
-
-    // ==================================================
-    // 🔄 [핵심] 31번 클립 이후: 전체 복습 및 리마인드 하이라이팅 연동
-    // ==================================================
-    // 모든 카드 포커스 이펙트 초기화
+    // 하이라이팅 아웃라인 이펙트 초기화 리셋
     document.querySelectorAll('.concept-card').forEach((c) => (c.style.outline = 'none'));
 
-    if (idx === 32) {
-        // 각기둥 전체 구역 되돌아보기 포커싱
-        prismDefCard.style.outline = '5px solid var(--orange)';
-        prismCompCard.style.outline = '5px solid var(--orange)';
-        prismNamesCard.style.outline = '5px solid var(--orange)';
-    } else if (idx === 33) {
-        // 각뿔 전체 구역 되돌아보기 포커싱
-        pyramidDefCard.style.outline = '5px solid var(--green)';
-        pyramidCompCard.style.outline = '5px solid var(--green)';
-        pyramidNamesCard.style.outline = '5px solid var(--green)';
+    // 2. [Switch-Case] 기반의 가독성 높은 인터랙션 분기 처리
+    switch (currentAction) {
+        case 'INTRO':
+            // 대주제 및 모든 하위 레이어 은닉 (기본 도입부 상태)
+            topicsLayer.classList.remove('is-visible');
+            prismCardsLayer.classList.remove('is-visible');
+            pyramidCardsLayer.classList.remove('is-visible');
+            document.querySelector('.center-topic .toggle').setAttribute('aria-expanded', 'false');
+
+            // 모든 내부 카드 숨김
+            [
+                prismDefCard,
+                prismCompCard,
+                prismNamesCard,
+                pyramidDefCard,
+                pyramidCompCard,
+                pyramidNamesCard,
+            ].forEach((card) => card.classList.remove('is-revealed'));
+            // 모든 물음표 퀴즈 복구
+            document.querySelectorAll('.mini-question').forEach((btn) => btn.classList.remove('is-hidden'));
+            break;
+
+        case 'PRISM_OPEN':
+            // 대주제 오픈 및 각기둥 첫 카드 노출
+            topicsLayer.classList.add('is-visible');
+            document.querySelector('.center-topic .toggle').setAttribute('aria-expanded', 'true');
+
+            prismCardsLayer.classList.add('is-visible');
+            document.querySelector('[aria-controls="prism-cards"]').setAttribute('aria-expanded', 'true');
+
+            prismDefCard.classList.add('is-revealed');
+            prismCompCard.classList.remove('is-revealed');
+            prismNamesCard.classList.remove('is-revealed');
+
+            // 각뿔 및 퀴즈 초기화 보장
+            pyramidCardsLayer.classList.remove('is-visible');
+            document.querySelectorAll('.mini-question').forEach((btn) => btn.classList.remove('is-hidden'));
+            break;
+
+        case 'PRISM_COMPONENTS':
+            // 각기둥 구성요소 오픈 (미니 물음표 퀴즈 대기 상태)
+            topicsLayer.classList.add('is-visible');
+            prismCardsLayer.classList.add('is-visible');
+            prismDefCard.classList.add('is-revealed');
+            prismCompCard.classList.add('is-revealed');
+            prismNamesCard.classList.remove('is-revealed');
+
+            // 아직 퀴즈가 해결되기 전이므로 미니 물음표 보여주기
+            document.querySelectorAll('.pq-prism').forEach((btn) => btn.classList.remove('is-hidden'));
+            break;
+
+        case 'PRISM_QUIZ_SOLVED':
+            // 각기둥 내부 미니 말풍선 퀴즈 오픈(물음표 숨김 처리)
+            topicsLayer.classList.add('is-visible');
+            prismCardsLayer.classList.add('is-visible');
+            prismDefCard.classList.add('is-revealed');
+            prismCompCard.classList.add('is-revealed');
+            prismNamesCard.classList.remove('is-revealed');
+
+            // 각기둥 미니 퀴즈 정답 강제 공개
+            document.querySelectorAll('.pq-prism').forEach((btn) => btn.classList.add('is-hidden'));
+            break;
+
+        case 'PRISM_NAMES':
+            // 각기둥 명칭 정의 카드 전개 완료 및 퀴즈 정답 유지
+            topicsLayer.classList.add('is-visible');
+            prismCardsLayer.classList.add('is-visible');
+            prismDefCard.classList.add('is-revealed');
+            prismCompCard.classList.add('is-revealed');
+            prismNamesCard.classList.add('is-revealed');
+            document.querySelectorAll('.pq-prism').forEach((btn) => btn.classList.add('is-hidden'));
+
+            // 각뿔 레이어 진입 대기화 처리
+            pyramidCardsLayer.classList.remove('is-visible');
+            break;
+
+        case 'PYRAMID_OPEN':
+            // 각기둥 정보 유지 + 각뿔 대주제 레이어 및 첫 정의 카드 공개
+            topicsLayer.classList.add('is-visible');
+            prismCardsLayer.classList.add('is-visible');
+
+            pyramidCardsLayer.classList.add('is-visible');
+            document.querySelector('[aria-controls="pyramid-cards"]').setAttribute('aria-expanded', 'true');
+
+            pyramidDefCard.classList.add('is-revealed');
+            pyramidCompCard.classList.remove('is-revealed');
+            pyramidNamesCard.classList.remove('is-revealed');
+            document.querySelectorAll('.pq-pyramid').forEach((btn) => btn.classList.remove('is-hidden'));
+            break;
+
+        case 'PYRAMID_COMPONENTS':
+            // 각뿔 구성요소 카드 오픈
+            topicsLayer.classList.add('is-visible');
+            pyramidCardsLayer.classList.add('is-visible');
+            pyramidDefCard.classList.add('is-revealed');
+            pyramidCompCard.classList.add('is-revealed');
+            pyramidNamesCard.classList.remove('is-revealed');
+            document.querySelectorAll('.pq-pyramid').forEach((btn) => btn.classList.remove('is-hidden'));
+            break;
+
+        case 'PYRAMID_QUIZ_SOLVED':
+            // 각뿔 미니 퀴즈 말풍선 정답 오픈
+            topicsLayer.classList.add('is-visible');
+            pyramidCardsLayer.classList.add('is-visible');
+            pyramidDefCard.classList.add('is-revealed');
+            pyramidCompCard.classList.add('is-revealed');
+            pyramidNamesCard.classList.remove('is-revealed');
+
+            document.querySelectorAll('.pq-pyramid').forEach((btn) => btn.classList.add('is-hidden'));
+            break;
+
+        case 'PYRAMID_NAMES':
+        case 'REVIEW_START':
+            // 모든 맵 요소 전개 완료 상태
+            topicsLayer.classList.add('is-visible');
+            prismCardsLayer.classList.add('is-visible');
+            pyramidCardsLayer.classList.add('is-visible');
+            [
+                prismDefCard,
+                prismCompCard,
+                prismNamesCard,
+                pyramidDefCard,
+                pyramidCompCard,
+                pyramidNamesCard,
+            ].forEach((card) => card.classList.add('is-revealed'));
+            document.querySelectorAll('.mini-question').forEach((btn) => btn.classList.add('is-hidden'));
+            break;
+
+        case 'REVIEW_PRISM':
+            // 전체 다 보인 상태에서 [각기둥 카드 영역] 그룹 주황색 강조 집중 피드백
+            this.toggleAllElementsActive(); // 복제 상태 활성화 기본 헬퍼 호출 대체 가능
+            [prismDefCard, prismCompCard, prismNamesCard].forEach((card) => {
+                card.classList.add('is-revealed');
+                card.style.outline = '5px solid var(--orange)';
+            });
+            break;
+
+        case 'REVIEW_PYRAMID':
+            // 전체 다 보인 상태에서 [각뿔 카드 영역] 그룹 초록색 강조 집중 피드백
+            [pyramidDefCard, pyramidCompCard, pyramidNamesCard].forEach((card) => {
+                card.classList.add('is-revealed');
+                card.style.outline = '5px solid var(--green)';
+            });
+            break;
+
+        case 'REVIEW_END':
+            // 하이라이팅이 끝나고 최종 전체 화면 유지 완료 단계
+            topicsLayer.classList.add('is-visible');
+            prismCardsLayer.classList.add('is-visible');
+            pyramidCardsLayer.classList.add('is-visible');
+            [
+                prismDefCard,
+                prismCompCard,
+                prismNamesCard,
+                pyramidDefCard,
+                pyramidCompCard,
+                pyramidNamesCard,
+            ].forEach((card) => card.classList.add('is-revealed'));
+            break;
+
+        default:
+            console.warn('정의되지 않은 재생 액션 코드명입니다:', currentAction);
     }
+}
+
+// 기존 분초 포맷 도우미 함수 보정
+function formatTimeDisplay(sec) {
+    const min = String(Math.floor(sec / 60)).padStart(2, '0');
+    const remainingSec = String(Math.floor(sec % 60)).padStart(2, '0');
+    return `${min}:${remainingSec}`;
+}
+
+function updateTimeDisplay(sec) {
+    currentTimeText.textContent = formatTimeDisplay(sec);
 }
 
 // ==================================================
