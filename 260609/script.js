@@ -431,49 +431,49 @@ timelineSlider.addEventListener('input', (e) => {
 // - duration: 해당 오디오가 재생되는 가상 시간(초)
 // - action: 이 오디오 단계에서 실행할 화면 제어 키워드 (switch-case와 연동)
 var AUDIO_PLAYLIST_CONFIG = [
-    { index: 1, duration: 4, action: 'INTRO' },
-    { index: 2, duration: 4, action: 'INTRO' },
-    { index: 3, duration: 4, action: 'INTRO' },
-    { index: 4, duration: 4, action: 'INTRO' },
-    { index: 5, duration: 4, action: 'INTRO' },
-    { index: 6, duration: 4, action: 'INTRO' },
-    { index: 7, duration: 4, action: 'INTRO' },
-    { index: 8, duration: 4, action: 'INTRO' },
-    { index: 9, duration: 4, action: 'INTRO' },
-    { index: 10, duration: 4, action: 'INTRO' },
-    { index: 11, duration: 4, action: 'INTRO' },
-    { index: 12, duration: 4, action: 'INTRO' },
-    { index: 13, duration: 4, action: 'INTRO' },
-    { index: 14, duration: 4, action: 'INTRO' },
-    { index: 15, duration: 4, action: 'INTRO' },
-    { index: 16, duration: 4, action: 'INTRO' },
-    { index: 17, duration: 4, action: 'INTRO' },
-    { index: 18, duration: 4, action: 'INTRO' },
+    { index: 1, duration: 6.374, action: 'INTRO' },
+    { index: 2, duration: 1.881, action: 'PRISM_OPEN' },
+    { index: 3, duration: 6.583, action: 'PRISM_OPEN' },
+    { index: 4, duration: 2.717, action: 'PRISM_COMPONENTS' },
+    { index: 5, duration: 4.389, action: 'PRISM_COMPONENTS' },
+    { index: 6, duration: 2.795, action: 'PRISM_COMPONENTS' },
+    { index: 7, duration: 3.553, action: 'PRISM_COMPONENTS' },
+    { index: 8, duration: 2.9, action: 'PRISM_COMPONENTS' },
+    { index: 9, duration: 2.586, action: 'PRISM_QUIZ_SOLVED' },
+    { index: 10, duration: 8.725, action: 'PRISM_NAMES' },
+    { index: 11, duration: 2.952, action: 'PRISM_NAMES' },
+    { index: 12, duration: 2.769, action: 'PRISM_NAMES' },
+    { index: 13, duration: 3.056, action: 'PRISM_NAMES' },
+    { index: 14, duration: 8.255, action: 'PRISM_NET' },
+    { index: 15, duration: 5.851, action: 'PRISM_NET' },
+    { index: 16, duration: 2.22, action: 'PRISM_NET' },
+    { index: 17, duration: 4.78, action: 'PYRAMID_OPEN' },
+    { index: 18, duration: 2.482, action: 'PYRAMID_OPEN' },
 
     // 19번부터 각기둥 본격 전개
-    { index: 19, duration: 4, action: 'PRISM_OPEN' },
-    { index: 20, duration: 4, action: 'PRISM_COMPONENTS' },
-    { index: 21, duration: 4, action: 'PRISM_QUIZ_SOLVED' },
-    { index: 22, duration: 4, action: 'PRISM_NAMES' },
-    { index: 23, duration: 4, action: 'PRISM_NAMES' },
-    { index: 24, duration: 4, action: 'PRISM_NAMES' },
-    { index: 25, duration: 4, action: 'PRISM_NAMES' },
+    { index: 19, duration: 3.056, action: 'PYRAMID_COMPONENTS' },
+    { index: 20, duration: 4.78, action: 'PYRAMID_COMPONENTS' },
+    { index: 21, duration: 3.422, action: 'PYRAMID_COMPONENTS' },
+    { index: 22, duration: 2.9, action: 'PYRAMID_COMPONENTS' },
+    { index: 23, duration: 4.598, action: 'PYRAMID_COMPONENTS' },
+    { index: 24, duration: 8.803, action: 'PYRAMID_QUIZ_SOLVED' },
+    { index: 25, duration: 6.818, action: 'PYRAMID_NAMES' },
 
     // 26번부터 각뿔 본격 전개
-    { index: 26, duration: 4, action: 'PYRAMID_OPEN' },
-    { index: 27, duration: 4, action: 'PYRAMID_COMPONENTS' },
-    { index: 28, duration: 4, action: 'PYRAMID_COMPONENTS' },
-    { index: 29, duration: 4, action: 'PYRAMID_QUIZ_SOLVED' },
-    { index: 30, duration: 4, action: 'PYRAMID_NAMES' },
+    { index: 26, duration: 3.892, action: 'PYRAMID_NAMES' },
+    { index: 27, duration: 2.691, action: 'PYRAMID_NAMES' },
+    { index: 28, duration: 3.004, action: 'PYRAMID_NAMES' },
+    { index: 29, duration: 3.082, action: 'PYRAMID_NAMES' },
+    { index: 30, duration: 1.776, action: 'REVIEW_START' },
 
     // 31번부터 복습 및 하이라이팅 연동
-    { index: 31, duration: 4, action: 'REVIEW_START' },
-    { index: 32, duration: 4, action: 'REVIEW_PRISM' },
-    { index: 33, duration: 4, action: 'REVIEW_PYRAMID' },
-    { index: 34, duration: 4, action: 'REVIEW_END' },
-    { index: 35, duration: 4, action: 'REVIEW_END' },
-    { index: 36, duration: 4, action: 'REVIEW_END' },
-    { index: 37, duration: 4, action: 'REVIEW_END' },
+    { index: 31, duration: 5.016, action: 'REVIEW_PRISM' },
+    { index: 32, duration: 1.62, action: 'REVIEW_PRISM' },
+    { index: 33, duration: 2.56, action: 'REVIEW_PYRAMID' },
+    { index: 34, duration: 1.829, action: 'REVIEW_PYRAMID' },
+    { index: 35, duration: 4.937, action: 'REVIEW_PYRAMID' },
+    { index: 36, duration: 2.769, action: 'REVIEW_END' },
+    { index: 37, duration: 9.064, action: 'REVIEW_END' },
 ];
 
 const audioTimelineMap = [];
@@ -635,6 +635,7 @@ function syncMindmapState(seconds) {
             break;
 
         case 'PRISM_NAMES':
+        case 'PRISM_NET':
             // 각기둥 명칭 정의 카드 전개 완료 및 퀴즈 정답 유지
             topicsLayer.classList.add('is-visible');
             prismCardsLayer.classList.add('is-visible');
@@ -779,7 +780,7 @@ function playCurrentSegment() {
         currentAudioElement.addEventListener('ended', () => {
             if (isPlaying) {
                 currentTimelineSeconds = currentClip.endTime;
-                if (currentTimelineSeconds >= 154) {
+                if (currentTimelineSeconds >= TOTAL_PLAYBACK_SECONDS) {
                     handlePlaybackEnd();
                 } else {
                     playerSlider.value = currentTimelineSeconds;
@@ -808,7 +809,7 @@ function startFallbackTimer() {
             return;
         }
         currentTimelineSeconds += 1 * playbackSpeed;
-        if (currentTimelineSeconds >= 154) {
+        if (currentTimelineSeconds >= TOTAL_PLAYBACK_SECONDS) {
             clearInterval(fallbackInterval);
             fallbackInterval = null;
             handlePlaybackEnd();
